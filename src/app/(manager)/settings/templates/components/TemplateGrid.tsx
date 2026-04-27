@@ -162,17 +162,19 @@ export default function TemplateGrid({ initialTemplates, areas }: Props) {
                             </Button>
                           </div>
                         ) : (
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
                             onClick={() => startEdit(key, count)}
-                            className={`w-10 h-8 rounded text-sm font-medium transition-colors cursor-pointer
-                              ${count === 0
+                            className={`w-10 h-8 text-sm font-medium ${
+                              count === 0
                                 ? 'text-gray-300 hover:bg-gray-100 hover:text-gray-500'
                                 : 'text-gray-800 hover:bg-blue-50 hover:text-blue-700'
-                              }`}
+                            }`}
                             title={count === 0 ? 'No shift — click to add' : `${count} staff required — click to edit`}
                           >
                             {count === 0 ? '—' : count}
-                          </button>
+                          </Button>
                         )}
                       </td>
                     )
@@ -184,7 +186,7 @@ export default function TemplateGrid({ initialTemplates, areas }: Props) {
         </tbody>
       </table>
 
-      <p className="mt-4 text-xs text-muted-foreground">
+      <p className="mt-4 mb-3 px-3 text-xs text-muted-foreground">
         Click any cell to edit. Enter staff count (0 to remove that shift from the template).
         Weekend columns are shaded. Fixed shift times: Morning 08:00–16:00, Afternoon 16:00–00:00, Night 00:00–08:00.
       </p>
