@@ -9,8 +9,7 @@ export async function GET() {
     .select(`
       *,
       primary_area:areas!staff_primary_area_id_fkey(id, name),
-      staff_areas(area_id, is_primary, area:areas(id, name)),
-      staff_certifications(certification_id, granted_date, expiry_date, certification:certifications(id, name))
+      staff_areas(area_id, is_primary, area:areas(id, name))
     `)
     .order('full_name')
 
@@ -19,7 +18,6 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  // Must be authenticated manager
   const authClient = await createServerClient()
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -29,7 +27,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { full_name, employee_id, email, phone, fte_target, primary_area_id, area_ids, certification_ids } =
+  const { full_name, employee_id, email, phone, fte_target, primary_area_id, area_ids } =
     body as {
       full_name: string
       employee_id: string
@@ -38,7 +36,6 @@ export async function POST(request: Request) {
       fte_target: number
       primary_area_id?: string
       area_ids?: string[]
-      certification_ids?: string[]
     }
 
   if (!full_name?.trim() || !employee_id?.trim() || !email?.trim()) {
@@ -55,19 +52,10 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Insert staff_areas
   const allAreaIds = Array.from(new Set([...(area_ids ?? []), ...(primary_area_id ? [primary_area_id] : [])]))
   if (allAreaIds.length > 0) {
     await supabase.from('staff_areas').insert(
       allAreaIds.map(aid => ({ staff_id: staff.id, area_id: aid, is_primary: aid === primary_area_id }))
-    )
-  }
-
-  // Insert certifications — just the junction (granted_date = today, no expiry)
-  if (certification_ids && certification_ids.length > 0) {
-    const today = new Date().toISOString().split('T')[0]
-    await supabase.from('staff_certifications').insert(
-      certification_ids.map(cid => ({ staff_id: staff.id, certification_id: cid, granted_date: today }))
     )
   }
 

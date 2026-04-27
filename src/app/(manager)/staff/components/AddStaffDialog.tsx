@@ -11,15 +11,14 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import StaffForm from './StaffForm'
-import type { Area, Certification } from '@/types/database'
+import type { Area } from '@/types/database'
 
 interface Props {
   areas: Area[]
-  certifications: Certification[]
   onCreated: () => void
 }
 
-export default function AddStaffDialog({ areas, certifications, onCreated }: Props) {
+export default function AddStaffDialog({ areas, onCreated }: Props) {
   const [open, setOpen] = useState(false)
 
   async function handleSubmit(values: import('./StaffForm').StaffFormValues) {
@@ -51,7 +50,6 @@ export default function AddStaffDialog({ areas, certifications, onCreated }: Pro
         </DialogHeader>
         <StaffForm
           areas={areas}
-          certifications={certifications}
           onSubmit={handleSubmit}
           onCancel={() => setOpen(false)}
           submitLabel="Add staff"

@@ -1,25 +1,19 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
-import { LayoutGrid, ShieldCheck, Building2 } from 'lucide-react'
+import { LayoutGrid, Building2 } from 'lucide-react'
 
 const settingsSections = [
   {
     href: '/settings/templates',
     icon: LayoutGrid,
     title: 'Shift Templates',
-    description: 'Define the master shift pattern — required staff counts and certifications per area, day, and shift type.',
+    description: 'Define the master shift pattern — required staff counts per area, day, and shift type.',
   },
   {
     href: '/settings/areas',
     icon: Building2,
     title: 'Areas',
     description: 'Manage modality areas (X-Ray, Ultrasound, CT) and their minimum staffing levels.',
-  },
-  {
-    href: '/settings/certifications',
-    icon: ShieldCheck,
-    title: 'Certifications',
-    description: 'Manage staff certifications and the areas that require them.',
   },
 ]
 

@@ -17,12 +17,6 @@ create table areas (
   created_at timestamptz not null default now()
 );
 
-create table certifications (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  required_for_area_id uuid references areas(id) on delete set null
-);
-
 -- ============================================================
 -- STAFF
 -- ============================================================
@@ -37,14 +31,6 @@ create table staff (
   primary_area_id uuid references areas(id) on delete set null,
   is_active boolean not null default true,
   created_at timestamptz not null default now()
-);
-
-create table staff_certifications (
-  staff_id uuid not null references staff(id) on delete cascade,
-  certification_id uuid not null references certifications(id) on delete cascade,
-  granted_date date not null,
-  expiry_date date,
-  primary key (staff_id, certification_id)
 );
 
 create table staff_areas (
@@ -76,7 +62,6 @@ create table shift_templates (
   ado_accrual_minutes int not null default 22,
   day_of_week int not null check (day_of_week between 0 and 6),
   required_staff int not null default 1 check (required_staff > 0),
-  required_certification_id uuid references certifications(id) on delete set null,
   is_active boolean not null default true
 );
 
@@ -226,19 +211,12 @@ insert into areas (name, min_staff_per_shift) values
   ('Ultrasound', 1),
   ('CT', 1);
 
--- Default certifications
-insert into certifications (name, required_for_area_id) values
-  ('CT-Certified', (select id from areas where name = 'CT')),
-  ('Ultrasound-Accredited', (select id from areas where name = 'Ultrasound'));
-
 -- ============================================================
 -- ROW LEVEL SECURITY
 -- ============================================================
 
 alter table areas enable row level security;
-alter table certifications enable row level security;
 alter table staff enable row level security;
-alter table staff_certifications enable row level security;
 alter table staff_areas enable row level security;
 alter table staff_availability enable row level security;
 alter table shift_templates enable row level security;
@@ -251,9 +229,7 @@ alter table ado_accruals enable row level security;
 
 -- Authenticated users (managers) have full access to everything
 create policy "managers_all" on areas for all to authenticated using (true) with check (true);
-create policy "managers_all" on certifications for all to authenticated using (true) with check (true);
 create policy "managers_all" on staff for all to authenticated using (true) with check (true);
-create policy "managers_all" on staff_certifications for all to authenticated using (true) with check (true);
 create policy "managers_all" on staff_areas for all to authenticated using (true) with check (true);
 create policy "managers_all" on staff_availability for all to authenticated using (true) with check (true);
 create policy "managers_all" on shift_templates for all to authenticated using (true) with check (true);

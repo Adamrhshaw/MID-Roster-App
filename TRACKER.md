@@ -101,7 +101,7 @@
 | Item | Status |
 |------|--------|
 | Settings nav (links to sub-sections) | ✅ |
-| Areas CRUD | ⬜ |
+| Areas CRUD | ✅ |
 | Shift template editor (grid: area × day × shift type) | 🔶 |
 
 ### Export

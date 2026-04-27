@@ -13,16 +13,15 @@ import {
 } from '@/components/ui/popover'
 import AddStaffDialog from './AddStaffDialog'
 import EditStaffSheet from './EditStaffSheet'
-import type { Area, Certification, Staff } from '@/types/database'
+import type { Area, Staff } from '@/types/database'
 import { Search } from 'lucide-react'
 
 interface Props {
   initialStaff: Staff[]
   areas: Area[]
-  certifications: Certification[]
 }
 
-export default function StaffTable({ initialStaff, areas, certifications }: Props) {
+export default function StaffTable({ initialStaff, areas }: Props) {
   const [staff, setStaff] = useState<Staff[]>(initialStaff)
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState<Staff | null>(null)
@@ -55,7 +54,7 @@ export default function StaffTable({ initialStaff, areas, certifications }: Prop
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Staff</h1>
-        <AddStaffDialog areas={areas} certifications={certifications} onCreated={refresh} />
+        <AddStaffDialog areas={areas} onCreated={refresh} />
       </div>
 
       <div className="flex items-center gap-3">
@@ -79,7 +78,6 @@ export default function StaffTable({ initialStaff, areas, certifications }: Prop
               <TableHead>Employee ID</TableHead>
               <TableHead>FTE</TableHead>
               <TableHead>Areas</TableHead>
-              <TableHead>Certifications</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-12" />
             </TableRow>
@@ -87,7 +85,7 @@ export default function StaffTable({ initialStaff, areas, certifications }: Prop
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-10 text-sm text-gray-400">
+                <TableCell colSpan={6} className="text-center py-10 text-sm text-gray-400">
                   {query ? 'No staff match your search.' : 'No staff yet — click Add Staff to get started.'}
                 </TableCell>
               </TableRow>
@@ -108,19 +106,6 @@ export default function StaffTable({ initialStaff, areas, certifications }: Prop
                         ))
                       ) : member.primary_area ? (
                         <Badge variant="secondary" className="text-xs">{member.primary_area.name} ★</Badge>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {member.certifications && member.certifications.length > 0 ? (
-                        member.certifications.map(c => (
-                          <Badge key={c.certification_id} className="text-xs bg-emerald-100 text-emerald-800 border-emerald-200">
-                            {c.certification?.name}
-                          </Badge>
-                        ))
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>
                       )}
@@ -167,7 +152,6 @@ export default function StaffTable({ initialStaff, areas, certifications }: Prop
       <EditStaffSheet
         staff={editing}
         areas={areas}
-        certifications={certifications}
         onClose={() => setEditing(null)}
         onUpdated={refresh}
       />

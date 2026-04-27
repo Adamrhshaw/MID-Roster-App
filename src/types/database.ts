@@ -17,12 +17,6 @@ export interface Area {
   created_at: string
 }
 
-export interface Certification {
-  id: string
-  name: string
-  required_for_area_id: string | null
-}
-
 export interface Staff {
   id: string
   full_name: string
@@ -36,15 +30,6 @@ export interface Staff {
   // joined
   primary_area?: Area
   areas?: Area[]
-  certifications?: StaffCertification[]
-}
-
-export interface StaffCertification {
-  staff_id: string
-  certification_id: string
-  granted_date: string
-  expiry_date: string | null
-  certification?: Certification
 }
 
 export interface StaffArea {
@@ -70,11 +55,9 @@ export interface ShiftTemplate {
   ado_accrual_minutes: number
   day_of_week: number
   required_staff: number
-  required_certification_id: string | null
   is_active: boolean
   // joined
   area?: Area
-  required_certification?: Certification
 }
 
 export interface RosterBlock {

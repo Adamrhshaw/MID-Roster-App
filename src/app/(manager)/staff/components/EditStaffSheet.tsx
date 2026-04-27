@@ -7,17 +7,16 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import StaffForm, { staffToFormValues, type StaffFormValues } from './StaffForm'
-import type { Area, Certification, Staff } from '@/types/database'
+import type { Area, Staff } from '@/types/database'
 
 interface Props {
   staff: Staff | null
   areas: Area[]
-  certifications: Certification[]
   onClose: () => void
   onUpdated: () => void
 }
 
-export default function EditStaffSheet({ staff, areas, certifications, onClose, onUpdated }: Props) {
+export default function EditStaffSheet({ staff, areas, onClose, onUpdated }: Props) {
   if (!staff) return null
 
   async function handleSubmit(values: StaffFormValues) {
@@ -46,7 +45,6 @@ export default function EditStaffSheet({ staff, areas, certifications, onClose, 
         <div className="px-4 pb-4">
           <StaffForm
             areas={areas}
-            certifications={certifications}
             initial={staffToFormValues(staff)}
             onSubmit={handleSubmit}
             onCancel={onClose}

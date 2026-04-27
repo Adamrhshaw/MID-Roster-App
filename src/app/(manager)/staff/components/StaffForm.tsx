@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { Area, Certification, Staff } from '@/types/database'
+import type { Area, Staff } from '@/types/database'
 
 export interface StaffFormValues {
   full_name: string
@@ -21,12 +21,10 @@ export interface StaffFormValues {
   fte_target: string
   primary_area_id: string
   area_ids: string[]
-  certification_ids: string[]
 }
 
 interface Props {
   areas: Area[]
-  certifications: Certification[]
   initial?: Partial<StaffFormValues>
   onSubmit: (values: StaffFormValues) => Promise<void>
   onCancel: () => void
@@ -42,7 +40,6 @@ function defaultValues(initial?: Partial<StaffFormValues>): StaffFormValues {
     fte_target: initial?.fte_target ?? '1.0',
     primary_area_id: initial?.primary_area_id ?? '',
     area_ids: initial?.area_ids ?? [],
-    certification_ids: initial?.certification_ids ?? [],
   }
 }
 
@@ -55,11 +52,10 @@ export function staffToFormValues(staff: Staff): StaffFormValues {
     fte_target: String(staff.fte_target),
     primary_area_id: staff.primary_area_id ?? '',
     area_ids: staff.areas?.map(a => a.id) ?? [],
-    certification_ids: staff.certifications?.map(c => c.certification_id) ?? [],
   }
 }
 
-export default function StaffForm({ areas, certifications, initial, onSubmit, onCancel, submitLabel = 'Save' }: Props) {
+export default function StaffForm({ areas, initial, onSubmit, onCancel, submitLabel = 'Save' }: Props) {
   const [values, setValues] = useState<StaffFormValues>(defaultValues(initial))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -68,10 +64,10 @@ export default function StaffForm({ areas, certifications, initial, onSubmit, on
     setValues(prev => ({ ...prev, [key]: value }))
   }
 
-  function toggleArrayValue(key: 'area_ids' | 'certification_ids', id: string) {
+  function toggleAreaId(id: string) {
     setValues(prev => {
-      const arr = prev[key]
-      return { ...prev, [key]: arr.includes(id) ? arr.filter(x => x !== id) : [...arr, id] }
+      const arr = prev.area_ids
+      return { ...prev, area_ids: arr.includes(id) ? arr.filter(x => x !== id) : [...arr, id] }
     })
   }
 
@@ -156,7 +152,7 @@ export default function StaffForm({ areas, certifications, initial, onSubmit, on
                 <button
                   key={a.id}
                   type="button"
-                  onClick={() => toggleArrayValue('area_ids', a.id)}
+                  onClick={() => toggleAreaId(a.id)}
                   className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
                     checked
                       ? 'bg-blue-600 text-white border-blue-600'
@@ -164,31 +160,6 @@ export default function StaffForm({ areas, certifications, initial, onSubmit, on
                   }`}
                 >
                   {a.name}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {certifications.length > 0 && (
-        <div className="flex flex-col gap-1.5">
-          <Label>Certifications</Label>
-          <div className="flex flex-wrap gap-2">
-            {certifications.map(c => {
-              const checked = values.certification_ids.includes(c.id)
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => toggleArrayValue('certification_ids', c.id)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
-                    checked
-                      ? 'bg-emerald-600 text-white border-emerald-600'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-                  }`}
-                >
-                  {c.name}
                 </button>
               )
             })}
