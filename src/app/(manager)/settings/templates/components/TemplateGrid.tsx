@@ -91,7 +91,7 @@ export default function TemplateGrid({ initialTemplates, areas }: Props) {
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-sm">
         <thead>
-          <tr>
+          <tr className="bg-gray-50">
             <th className="w-32 text-left py-2 px-3 text-muted-foreground font-medium border-b">Area</th>
             <th className="w-28 text-left py-2 px-3 text-muted-foreground font-medium border-b">Shift</th>
             {DAYS.map(d => (
