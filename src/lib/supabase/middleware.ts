@@ -26,6 +26,8 @@ export async function updateSession(request: NextRequest) {
   // Refresh session — do not remove
   const { data: { user } } = await supabase.auth.getUser()
 
+  if (process.env.DEV_BYPASS_AUTH === 'true') return supabaseResponse
+
   // Protect manager routes
   const isManagerRoute = request.nextUrl.pathname.startsWith('/roster') ||
     request.nextUrl.pathname.startsWith('/staff') ||

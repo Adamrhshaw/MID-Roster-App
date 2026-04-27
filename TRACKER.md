@@ -102,7 +102,7 @@
 |------|--------|
 | Settings nav (links to sub-sections) | ✅ |
 | Areas CRUD | ✅ |
-| Shift template editor (grid: area × day × shift type) | 🔶 |
+| Shift template editor (grid: area × day × shift type) | ✅ |
 
 ### Export
 
