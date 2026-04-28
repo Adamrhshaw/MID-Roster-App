@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Pencil, MoreHorizontal, UserMinus } from 'lucide-react'
+import { Pencil, MoreHorizontal, UserMinus, UserCheck } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,12 +31,25 @@ export default function StaffTable({ initialStaff, areas }: Props) {
     const res = await fetch('/api/staff')
     if (res.ok) {
       const data = await res.json()
-      startTransition(() => setStaff(data))
+      const mapped = data.map((s: Staff & { staff_areas?: { area: { id: string; name: string } }[] }) => ({
+        ...s,
+        areas: s.staff_areas?.map(sa => sa.area).filter(Boolean) ?? [],
+      }))
+      startTransition(() => setStaff(mapped))
     }
   }
 
   async function deactivate(id: string) {
     const res = await fetch(`/api/staff/${id}`, { method: 'DELETE' })
+    if (res.ok) refresh()
+  }
+
+  async function reactivate(id: string) {
+    const res = await fetch(`/api/staff/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_active: true }),
+    })
     if (res.ok) refresh()
   }
 
@@ -132,13 +145,23 @@ export default function StaffTable({ initialStaff, areas }: Props) {
                           <Pencil className="h-3.5 w-3.5" />
                           Edit
                         </button>
-                        <button
-                          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-red-600 hover:bg-red-50"
-                          onClick={() => deactivate(member.id)}
-                        >
-                          <UserMinus className="h-3.5 w-3.5" />
-                          Deactivate
-                        </button>
+                        {member.is_active ? (
+                          <button
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-red-600 hover:bg-red-50"
+                            onClick={() => deactivate(member.id)}
+                          >
+                            <UserMinus className="h-3.5 w-3.5" />
+                            Deactivate
+                          </button>
+                        ) : (
+                          <button
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-green-700 hover:bg-green-50"
+                            onClick={() => reactivate(member.id)}
+                          >
+                            <UserCheck className="h-3.5 w-3.5" />
+                            Reactivate
+                          </button>
+                        )}
                       </PopoverContent>
                     </Popover>
                   </TableCell>

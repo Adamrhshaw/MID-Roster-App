@@ -33,7 +33,7 @@
 | Add Staff dialog | ✅ |
 | Edit Staff slide-over | ✅ |
 | Deactivate staff (soft delete) | ✅ |
-| Re-activate staff | ⬜ |
+| Re-activate staff | ✅ |
 | `GET/POST /api/staff` | ✅ |
 | `PATCH/DELETE /api/staff/[id]` | ✅ |
 
