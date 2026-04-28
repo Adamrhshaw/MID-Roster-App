@@ -186,7 +186,7 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {/* Week navigator */}
-      <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-200 bg-white shrink-0">
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-200 shrink-0">
         <button
           className={cn(
             'text-xs px-2 py-1 rounded border border-gray-200 hover:bg-gray-50',
@@ -392,7 +392,7 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
       </div>
 
       {/* Coverage bar */}
-      <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-2 flex items-center gap-6 overflow-x-auto">
+      <div className="shrink-0 border-t border-gray-200 px-4 py-2 flex items-center gap-6 overflow-x-auto">
         <span className="text-xs text-gray-400 shrink-0">Coverage</span>
         {data.areas.map(area => {
           const totFilled = visibleDates.reduce((sum, d) => sum + (coverage[`${area.id}:${d}`]?.filled ?? 0), 0)
