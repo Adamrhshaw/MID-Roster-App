@@ -65,17 +65,25 @@
 | Phase 4b — ADO scheduling | ⬜ |
 | Phase 5 — generation report | ⬜ |
 
+### Testing
+
+| Item | Status |
+|------|--------|
+| Vitest setup | ✅ |
+| Unit tests — rules engine (one per rule) | ✅ |
+| API integration tests — `/api/leave` and `/api/swaps/[id]` | ✅ |
+
 ### Rules Engine (`src/lib/rules/`)
 
 | Item | Status |
 |------|--------|
-| Type definitions (`RuleContext`, `Violation`, `Rule`) | ⬜ |
-| `minimumRestPeriodRule` (10h between shifts) | ⬜ |
-| `maxWeeklyHoursRule` (fte × 35h) | ⬜ |
-| `leaveConflictRule` | ⬜ |
-| `certificationRequiredRule` | ⬜ |
-| `areaCoverageRule` (min staff per shift) | ⬜ |
-| `availabilityRule` (day-of-week availability) | ⬜ |
+| Type definitions (`RuleContext`, `Violation`, `Rule`) | ✅ |
+| `minimumRestPeriodRule` (10h between shifts) | ✅ |
+| `maxWeeklyHoursRule` (fte × 35h) | ✅ |
+| `leaveConflictRule` | ✅ |
+| `certificationRequiredRule` | ✅ |
+| `areaCoverageRule` (min staff per shift) | ✅ |
+| `availabilityRule` (day-of-week availability) | ✅ |
 | Client-side warnings store (Zustand) | ⬜ |
 
 ### Leave (`/leave`)
@@ -158,7 +166,7 @@
 3. ~~Roster block creation — stamps `shift_instances` from templates~~ ✅
 4. ~~Custom roster grid — render read-only grid first (days × staff, shift pills)~~ ✅
 5. ~~Leave + Swap inboxes — wire real data + approve/reject~~ ✅
-6. Rules engine — pure TypeScript functions
+6. ~~Vitest setup + rules engine (unit tests per rule, API integration tests for leave/swaps)~~ ✅
 7. Drag-and-drop + rule validation
 8. Roster generation algorithm (phases 1–5)
 9. Portal — leave + swap submission

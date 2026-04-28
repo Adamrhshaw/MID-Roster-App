@@ -76,6 +76,15 @@ Use the `shadcn` CLI to install and manage UI components. Never manually create 
 npx shadcn@latest add <component>
 ```
 
+## Testing
+
+Run tests with `npm test` (Vitest, requires `.env.local` with Supabase credentials).
+
+- **Unit tests** — `src/lib/rules/__tests__/` — pure functions, no DB required
+- **Integration tests** — `src/app/api/__tests__/` — hit real Supabase; seed + clean up per test
+
+Do not mock the Supabase client in integration tests — tests must use the real DB to catch constraint/FK issues.
+
 ## File Structure (key paths)
 
 ```
@@ -83,18 +92,22 @@ src/
   app/
     (manager)/          ← protected; requires Supabase Auth session
       staff/            ← ✅ fully implemented
-      roster/[blockId]/ ← 🔶 shell only
-      leave/            ← 🔶 shell only
-      swaps/            ← 🔶 shell only
-      settings/         ← 🔶 nav only; sub-pages are shells
+      roster/[blockId]/ ← ✅ read-only grid
+      leave/            ← ✅ inbox with approve/reject
+      swaps/            ← ✅ inbox with approve/reject
+      settings/         ← ✅ areas + templates CRUD
     api/
       staff/            ← ✅ GET, POST, PATCH, DELETE
+      leave/            ← ✅ GET, PATCH (approve/reject)
+      swaps/            ← ✅ GET, PATCH (approve/reject + assignment swap)
       portal/session/   ← ✅ Employee ID lookup + cookie
     portal/             ← staff portal (no auth required)
     view/               ← public read-only roster viewer
   lib/
     supabase/           ← client / server / service helpers
-    rules/              ← ⬜ rules engine (not yet built)
+    rules/              ← ✅ 6 rules: minimumRestPeriod, maxWeeklyHours,
+    │                        leaveConflict, availability, areaCoverage,
+    │                        certificationRequired
     generator/          ← ⬜ roster generation (not yet built)
     notifications/      ← ⬜ email via Resend (not yet built)
   types/database.ts     ← TypeScript interfaces for all DB tables
