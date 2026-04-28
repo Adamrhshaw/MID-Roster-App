@@ -153,8 +153,8 @@
 
 ## Suggested Build Order
 
-1. Areas CRUD (`/settings/areas`) — unblocks templates and staff area selection
-2. Shift template editor — prerequisite for roster generation
+1. ~~Areas CRUD (`/settings/areas`) — unblocks templates and staff area selection~~ ✅
+2. ~~Shift template editor — prerequisite for roster generation~~ ✅
 3. Roster block creation — stamps `shift_instances` from templates
 4. FullCalendar integration — render read-only roster view first
 5. Leave + Swap inboxes — wire real data + approve/reject
