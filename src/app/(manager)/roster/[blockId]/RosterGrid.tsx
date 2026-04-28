@@ -16,6 +16,7 @@ import { AlertTriangle } from 'lucide-react'
 import type { ShiftType } from '@/types/database'
 import { useRosterStore, type RichAssignment } from '@/lib/warnings/rosterStore'
 import type { Violation } from '@/lib/rules/types'
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
 import ViolationsPopover from './ViolationsPopover'
 import AssignPopover from './AssignPopover'
 
@@ -116,9 +117,8 @@ function ShiftPill({ shiftInstanceId, staffId, shiftType, areaName, startTime, e
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id })
 
   const hasViolations = violations.length > 0
-  const violationMessages = violations.map(v => v.message).join('\n')
 
-  return (
+  const pill = (
     <span
       ref={setNodeRef}
       {...listeners}
@@ -129,11 +129,30 @@ function ShiftPill({ shiftInstanceId, staffId, shiftType, areaName, startTime, e
         isDragging && !isDragOverlay && 'opacity-30',
         isDragOverlay && 'shadow-lg cursor-grabbing rotate-1',
       )}
-      title={`${areaName} ${shiftType} – ${startTime.slice(0, 5)}–${endTime.slice(0, 5)}${hasViolations ? '\n\n⚠ ' + violationMessages : ''}`}
+      title={hasViolations ? undefined : `${areaName} ${shiftType} – ${startTime.slice(0, 5)}–${endTime.slice(0, 5)}`}
     >
       {SHIFT_LABEL[shiftType]}
       {hasViolations && <AlertTriangle className="h-2.5 w-2.5 text-amber-500 shrink-0" />}
     </span>
+  )
+
+  if (!hasViolations) return pill
+
+  return (
+    <Tooltip>
+      <TooltipTrigger render={pill} />
+      <TooltipContent side="top" className="max-w-56 whitespace-normal">
+        <div className="space-y-1">
+          <div className="font-medium">{areaName} {SHIFT_LABEL[shiftType]} – {startTime.slice(0, 5)}–{endTime.slice(0, 5)}</div>
+          {violations.map((v, i) => (
+            <div key={i} className="flex items-start gap-1 opacity-90">
+              <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0 text-amber-300" />
+              <span>{v.message}</span>
+            </div>
+          ))}
+        </div>
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -146,7 +165,7 @@ interface DropCellProps {
   children: React.ReactNode
 }
 
-function DropCell({ shiftInstanceId, staffId, isOccupied, children }: DropCellProps) {
+function DropCell({ shiftInstanceId, staffId, isOccupied, isHighlighted, children }: DropCellProps & { isHighlighted?: boolean }) {
   const id = cellId(shiftInstanceId, staffId)
   const { setNodeRef, isOver } = useDroppable({ id })
 
@@ -157,6 +176,7 @@ function DropCell({ shiftInstanceId, staffId, isOccupied, children }: DropCellPr
         'min-h-[20px] rounded transition-colors',
         isOver && !isOccupied && 'bg-blue-50 ring-1 ring-blue-300',
         isOver && isOccupied && 'bg-amber-50 ring-1 ring-amber-300',
+        isHighlighted && 'ring-2 ring-amber-400 bg-amber-50',
       )}
     >
       {children}
@@ -229,6 +249,7 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
   const storeStaff = useRosterStore(s => s.staff)
   const storeShifts = useRosterStore(s => s.shifts)
   const isHydrated = useRosterStore(s => s.blockId === blockId)
+  const highlightedShiftId = useRosterStore(s => s.highlightedShiftId)
 
   useEffect(() => {
     fetch(`/api/roster/${blockId}/shifts`)
@@ -404,6 +425,7 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
   const hasWriteErrors = [...pendingWrites.current.values()].some(s => s === 'error')
 
   return (
+    <TooltipProvider delay={400}>
     <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <div className="flex flex-col flex-1 min-h-0">
         {/* Toolbar */}
@@ -523,6 +545,7 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
                                     shiftInstanceId={shift.id}
                                     staffId={member.id}
                                     isOccupied={isAssigned}
+                                    isHighlighted={highlightedShiftId === shift.id}
                                   >
                                     {isAssigned && (
                                       <ShiftPill
@@ -627,5 +650,6 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
         )}
       </DragOverlay>
     </DndContext>
+    </TooltipProvider>
   )
 }

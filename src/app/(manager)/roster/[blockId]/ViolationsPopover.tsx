@@ -3,6 +3,7 @@
 import { AlertTriangle } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useRosterStore } from '@/lib/warnings/rosterStore'
+import { useState } from 'react'
 
 interface Props {
   onJumpToWeek: (weekOffset: number) => void
@@ -13,6 +14,8 @@ export default function ViolationsPopover({ onJumpToWeek, blockStart }: Props) {
   const violations = useRosterStore(s => s.violations)
   const staff = useRosterStore(s => s.staff)
   const shifts = useRosterStore(s => s.shifts)
+  const highlightShift = useRosterStore(s => s.highlightShift)
+  const [open, setOpen] = useState(false)
 
   if (violations.length === 0) return null
 
@@ -28,7 +31,7 @@ export default function ViolationsPopover({ onJumpToWeek, blockStart }: Props) {
   }
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         render={
           <button className="relative flex items-center justify-center h-7 w-7 rounded hover:bg-gray-100 text-amber-500">
@@ -51,7 +54,11 @@ export default function ViolationsPopover({ onJumpToWeek, blockStart }: Props) {
               <li key={i}>
                 <button
                   className="w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors"
-                  onClick={() => weekOffset !== null && onJumpToWeek(weekOffset)}
+                  onClick={() => {
+                    if (weekOffset !== null) onJumpToWeek(weekOffset)
+                    if (v.shiftInstanceId) highlightShift(v.shiftInstanceId)
+                    setOpen(false)
+                  }}
                 >
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="h-3 w-3 text-amber-500 mt-0.5 shrink-0" />

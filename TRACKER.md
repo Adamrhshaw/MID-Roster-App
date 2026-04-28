@@ -51,7 +51,7 @@
 | Open/gap indicators | ✅ |
 | Coverage bar (filled vs required per area) | ✅ |
 | Violations bell + popover (toolbar) | ✅ |
-| Violation click → jump to week + highlight cell | ⬜ |
+| Violation click → jump to week + highlight cell | ✅ |
 | Publish / archive block | ⬜ |
 
 ### Roster Generation
