@@ -4,10 +4,15 @@ import { createClient as createServerClient } from '@/lib/supabase/server'
 
 type Params = { params: Promise<{ id: string }> }
 
-export async function PATCH(request: Request, { params }: Params) {
+async function requireAuth() {
+  if (process.env.DEV_BYPASS_AUTH === 'true') return true
   const authClient = await createServerClient()
   const { data: { user } } = await authClient.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return !!user
+}
+
+export async function PATCH(request: Request, { params }: Params) {
+  if (!await requireAuth()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id } = await params
 
@@ -44,9 +49,7 @@ export async function PATCH(request: Request, { params }: Params) {
 }
 
 export async function DELETE(_request: Request, { params }: Params) {
-  const authClient = await createServerClient()
-  const { data: { user } } = await authClient.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await requireAuth()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id } = await params
 

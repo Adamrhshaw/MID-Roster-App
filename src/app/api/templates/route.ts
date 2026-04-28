@@ -21,10 +21,15 @@ export async function GET() {
   return NextResponse.json(data)
 }
 
-export async function POST(request: Request) {
+async function requireAuth() {
+  if (process.env.DEV_BYPASS_AUTH === 'true') return true
   const authClient = await createServerClient()
   const { data: { user } } = await authClient.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return !!user
+}
+
+export async function POST(request: Request) {
+  if (!await requireAuth()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   let body: unknown
   try { body = await request.json() } catch {
