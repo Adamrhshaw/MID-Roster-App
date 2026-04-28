@@ -2,8 +2,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { notFound } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, Wand2, Send } from 'lucide-react'
-import Link from 'next/link'
+import { Wand2, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import CreateRosterBlockDialog from '../components/CreateRosterBlockDialog'
 import BlockSwitcherDropdown from '../components/BlockSwitcherDropdown'
@@ -47,48 +46,10 @@ export default async function RosterBlockPage({ params }: Props) {
   const blockLabel = block.name ?? `${block.start_date} – ${block.end_date}`
 
   return (
-    <div className="flex h-full flex-col p-6 gap-0">
-      <div className="flex flex-col flex-1 min-h-0 rounded-lg border border-gray-200 bg-white overflow-hidden">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between border-b border-gray-200 px-6 py-3 shrink-0">
+    <div className="flex h-full flex-col p-6 gap-4">
+      {/* Above-card header — matches staff page pattern */}
+      <div className="flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          {/* Prev / Next */}
-          <div className="flex items-center gap-0.5">
-            {prevBlock ? (
-              <Link
-                href={`/roster/${prevBlock.id}`}
-                title={prevBlock.name ?? `${prevBlock.start_date} – ${prevBlock.end_date}`}
-                className={cn(
-                  'inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-500',
-                  'hover:bg-gray-100 hover:text-gray-900 transition-colors'
-                )}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Link>
-            ) : (
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-300 cursor-not-allowed">
-                <ChevronLeft className="h-4 w-4" />
-              </span>
-            )}
-            {nextBlock ? (
-              <Link
-                href={`/roster/${nextBlock.id}`}
-                title={nextBlock.name ?? `${nextBlock.start_date} – ${nextBlock.end_date}`}
-                className={cn(
-                  'inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-500',
-                  'hover:bg-gray-100 hover:text-gray-900 transition-colors'
-                )}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Link>
-            ) : (
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-300 cursor-not-allowed">
-                <ChevronRight className="h-4 w-4" />
-              </span>
-            )}
-          </div>
-
-          {/* Block name + switcher dropdown */}
           <BlockSwitcherDropdown
             currentId={blockId}
             currentLabel={blockLabel}
@@ -115,11 +76,13 @@ export default async function RosterBlockPage({ params }: Props) {
         </div>
       </div>
 
-      <RosterGrid
-        blockId={blockId}
-        startDate={block.start_date}
-        endDate={block.end_date}
-      />
+      {/* Grid card */}
+      <div className="flex flex-col flex-1 min-h-0 rounded-lg border border-gray-200 bg-white overflow-hidden">
+        <RosterGrid
+          blockId={blockId}
+          startDate={block.start_date}
+          endDate={block.end_date}
+        />
       </div>
     </div>
   )

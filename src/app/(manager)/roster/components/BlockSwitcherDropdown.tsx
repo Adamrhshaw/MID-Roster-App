@@ -27,7 +27,7 @@ export default function BlockSwitcherDropdown({ currentId, currentLabel, blocks 
     <Popover>
       <PopoverTrigger
         render={
-          <button className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-sm font-semibold text-gray-900 hover:bg-gray-100 transition-colors" />
+          <button className="flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-lg font-semibold text-gray-900 hover:bg-gray-100 transition-colors" />
         }
       >
         {currentLabel}
