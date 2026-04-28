@@ -22,7 +22,7 @@ function formatDate(iso: string) {
 function shiftCell(assignment: ShiftSwap['requester_assignment'] | ShiftSwap['target_assignment']) {
   if (!assignment?.shift_instance) return '—'
   const si = assignment.shift_instance
-  const area = (si as unknown as { area?: { name: string } }).area?.name ?? ''
+  const area = si.area?.name ?? ''
   return `${area} · ${SHIFT_LABELS[si.shift_type]} · ${formatDate(si.shift_date)}`
 }
 
