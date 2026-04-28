@@ -1,9 +1,11 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import CreateRosterBlockDialog from './components/CreateRosterBlockDialog'
 
 export default async function RosterIndexPage() {
-  const supabase = await createClient()
+  // TODO(pre-prod): switch back to createClient() from supabase/server — using service client
+  // here because DEV_BYPASS_AUTH skips Supabase auth, leaving no session for the anon client.
+  const supabase = createServiceClient()
 
   const { data: block } = await supabase
     .from('roster_blocks')

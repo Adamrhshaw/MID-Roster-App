@@ -44,7 +44,7 @@
 | Roster index → redirect to latest block | ✅ |
 | Roster block page shell | ✅ |
 | Create roster block | ✅ |
-| FullCalendar resource view (staff × shifts) | ⬜ |
+| Custom roster grid (staff rows × day columns, shift pills) | ✅ |
 | Drag-and-drop assignment editing (dnd-kit) | ⬜ |
 | Two-tier rule validation on drag | ⬜ |
 | Shift assignment popover | ⬜ |
@@ -137,7 +137,7 @@
 | Redirect to current published block | 🔶 |
 | Published block viewer shell | 🔶 |
 | Fetch published shifts (anon RLS policy in place) | ⬜ |
-| FullCalendar read-only view + area filter | ⬜ |
+| Read-only roster grid + area filter | ⬜ |
 | `?highlight=EMP_ID` — dim other shifts | ⬜ |
 
 ---
@@ -156,7 +156,7 @@
 1. ~~Areas CRUD (`/settings/areas`) — unblocks templates and staff area selection~~ ✅
 2. ~~Shift template editor — prerequisite for roster generation~~ ✅
 3. ~~Roster block creation — stamps `shift_instances` from templates~~ ✅
-4. FullCalendar integration — render read-only roster view first
+4. ~~Custom roster grid — render read-only grid first (days × staff, shift pills)~~ ✅
 5. Leave + Swap inboxes — wire real data + approve/reject
 6. Rules engine — pure TypeScript functions
 7. Drag-and-drop + rule validation

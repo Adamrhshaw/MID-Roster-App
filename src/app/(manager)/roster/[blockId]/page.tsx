@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { notFound } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import CreateRosterBlockDialog from '../components/CreateRosterBlockDialog'
 import BlockSwitcherDropdown from '../components/BlockSwitcherDropdown'
+import DeleteRosterBlockButton from '../components/DeleteRosterBlockButton'
+import RosterGrid from './RosterGrid'
 import type { RosterBlock } from '@/types/database'
 
 interface Props {
@@ -15,7 +17,9 @@ interface Props {
 
 export default async function RosterBlockPage({ params }: Props) {
   const { blockId } = await params
-  const supabase = await createClient()
+  // TODO(pre-prod): switch back to createClient() from supabase/server — using service client
+  // here because DEV_BYPASS_AUTH skips Supabase auth, leaving no session for the anon client.
+  const supabase = createServiceClient()
 
   // Load current block + all blocks for switcher in one query
   const [{ data: block }, { data: allBlocks }] = await Promise.all([
@@ -96,6 +100,9 @@ export default async function RosterBlockPage({ params }: Props) {
 
         <div className="flex items-center gap-2">
           <CreateRosterBlockDialog triggerVariant="outline" />
+          {block.status === 'draft' && (
+            <DeleteRosterBlockButton blockId={blockId} blockLabel={blockLabel} />
+          )}
           <Button variant="outline" size="sm" className="gap-1.5" disabled>
             <Wand2 className="h-3.5 w-3.5" />
             Generate Draft
@@ -107,10 +114,11 @@ export default async function RosterBlockPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Calendar placeholder */}
-      <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
-        Calendar view — coming in next step.
-      </div>
+      <RosterGrid
+        blockId={blockId}
+        startDate={block.start_date}
+        endDate={block.end_date}
+      />
     </div>
   )
 }

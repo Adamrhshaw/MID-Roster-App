@@ -50,6 +50,10 @@ See [TRACKER.md](TRACKER.md) for what is built vs what is outstanding. Always up
 | `src/lib/supabase/server.ts` | Server components + API routes (exports `createClient`) |
 | `src/lib/supabase/service.ts` | API routes that need to bypass RLS (exports `createServiceClient`) |
 
+> **Pre-prod checklist — Supabase client swap:**
+> The roster index and block pages (`src/app/(manager)/roster/page.tsx` and `src/app/(manager)/roster/[blockId]/page.tsx`) were temporarily switched to `createServiceClient` (bypasses RLS) because `DEV_BYPASS_AUTH=true` means no Supabase session cookie exists during local development.
+> Before going to production, switch these two pages back to `createClient` from `src/lib/supabase/server.ts` so they run under the authenticated user's session and RLS policies apply correctly.
+
 ## Auth Model
 
 - **Managers**: Supabase Auth (email/password). Protected by `src/proxy.ts` middleware.

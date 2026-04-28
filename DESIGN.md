@@ -4,7 +4,7 @@
 
 A Radiology Department needs a web-based rostering tool to manage staff across three modalities (X-Ray, Ultrasound, CT) on a 3-shift-per-day, 4-week block cadence. The tool must enforce staffing constraints (FTE limits, certifications, leave), support a drag-and-drop editing UI, and provide a no-auth staff portal for leave/swap submissions. This document covers schema, rules engine, auth portal, generation algorithm, and export — ready for wireframing.
 
-**Stack:** Next.js 15 (App Router), Supabase (PostgreSQL + Auth for managers), FullCalendar (resource view), dnd-kit (drag-and-drop overlay), shadcn/ui (component library), papaparse/xlsx (exports).
+**Stack:** Next.js 15 (App Router), Supabase (PostgreSQL + Auth for managers), custom roster grid (see §7), dnd-kit (drag-and-drop overlay), shadcn/ui (component library), papaparse/xlsx (exports).
 
 **Confirmed shift times (all areas):** Morning 08:00–16:00 | Afternoon 16:00–00:00 | Night 00:00–08:00
 **Confirmed FTE hours (from MRS Award 2025):**
@@ -666,7 +666,7 @@ A publicly accessible read-only page where staff can view published rosters with
 │  Area: [All ▼]   View: Week / 4-Week                      │
 │                                                           │
 │  ┌─────────────────────────────────────────────────────┐ │
-│  │  Read-only FullCalendar resource view               │ │
+│  │  Read-only roster grid (same component as manager) │ │
 │  │  Highlighted staff's shifts: bold coloured border  │ │
 │  │  Other staff's shifts: normal opacity               │ │
 │  │  No drag-and-drop                                   │ │
@@ -690,19 +690,21 @@ A publicly accessible read-only page where staff can view published rosters with
 │  Areas: [All ▼]   Shift: [All ▼]   View: Week / 4-Week               │
 │                                                                       │
 │ ┌──────────────────────────────────────────┐  ┌─────────────────────┐│
-│ │  FullCalendar Resource View              │  │  ⚠ Warnings (4)     ││
-│ │  Resources (rows) = Staff members        │  │  ─────────────────  ││
-│ │  Events = Shift assignments              │  │  ⚠ Leave conflict   ││
-│ │                                          │  │  Smith, J · Mon 5   ││
-│ │  Colour coding:                          │  │  Morning · X-Ray    ││
-│ │   ■ Morning  (blue)                      │  │  ─────────────────  ││
-│ │   ■ Afternoon (amber)                    │  │  ⚠ No CT cert       ││
-│ │   ■ Night    (indigo)                    │  │  Patel, A · Tue 6   ││
-│ │   ■ ADO      (green)                     │  │  Morning · CT       ││
-│ │   □ Open/Gap (red outline)               │  │  ─────────────────  ││
-│ │                                          │  │  [View all 4 →]     ││
-│ │  Drag assignments between staff/dates    │  └─────────────────────┘│
-│ │  Click event → assignment detail popover │                          │
+│ │  Custom Roster Grid                      │  │  ⚠ Warnings (4)     ││
+│ │  Rows = Staff (grouped by area)          │  │  ─────────────────  ││
+│ │  Columns = Days in block                 │  │  ⚠ Leave conflict   ││
+│ │  Each cell = up to 3 shift pills         │  │  Smith, J · Mon 5   ││
+│ │             (morning / afternoon / night)│  │  Morning · X-Ray    ││
+│ │                                          │  │  ─────────────────  ││
+│ │  Colour coding:                          │  │  ⚠ No CT cert       ││
+│ │   ■ Morning  (blue)                      │  │  Patel, A · Tue 6   ││
+│ │   ■ Afternoon (amber)                    │  │  Morning · CT       ││
+│ │   ■ Night    (indigo)                    │  │  ─────────────────  ││
+│ │   ■ ADO      (green)                     │  │  [View all 4 →]     ││
+│ │   □ Open/Gap (red outline)               │  └─────────────────────┘│
+│ │                                          │                          │
+│ │  Drag pills between cells (dnd-kit)      │                          │
+│ │  Click pill → assignment detail popover  │                          │
 │ └──────────────────────────────────────────┘                          │
 │                                                                       │
 │  Coverage bar: X-Ray ████████░░ 4/5   Ultrasound █████░░░ 3/3   CT…  │
@@ -710,11 +712,16 @@ A publicly accessible read-only page where staff can view published rosters with
 ```
 
 **Key UI elements:**
-- **Resource view:** FullCalendar `resourceTimelineWeek` or `resourceTimeGridDay` with staff as resources, switchable between week and 4-week views
-- **Coverage bar:** Fixed summary bar below calendar showing filled vs required per area per visible day range — critical for spotting gaps at a glance
-- **Colour coding by shift type:** Consistent colour per shift type across all views
-- **Open/gap indicators:** Red-outlined empty slots where a shift instance has no assignment
-- **Warnings sidebar:** Collapsible panel on the right; badge count shown in the header
+- **Custom roster grid:** HTML table with sticky left column (staff names) and sticky header row (dates). Staff rows grouped by area with a section header. Week-view and 4-week-view toggled by slicing visible columns.
+- **Shift pills:** Each cell contains up to three fixed-position pills — morning / afternoon / night — coloured by shift type. Night shifts cross midnight but are modelled as a single pill on the shift's start date (no FullCalendar midnight-crossing complexity).
+- **ADO:** Rendered as a full-width green pill in the cell with no time label.
+- **Coverage bar:** Fixed summary bar below the grid showing filled vs required per area per visible day range — critical for spotting gaps at a glance.
+- **Colour coding by shift type:** Consistent colour per shift type across all views.
+- **Open/gap indicators:** Red-outlined empty pill slot where a shift instance has no assignment.
+- **Warnings sidebar:** Collapsible panel on the right; badge count shown in the header.
+
+> **Why custom grid instead of FullCalendar:**
+> FullCalendar's `resourceTimelineWeek` is a premium plugin requiring a paid licence. The free plugins don't support the resource-row layout needed here. Beyond cost, this app's data shape — exactly three fixed shift types per day rather than variable-duration time-positioned events — fights FullCalendar's rendering model: night shifts cross midnight (awkward in a time-axis view), ADO has no time at all, and the desired cell layout (three stacked pills) can't be achieved without deeply overriding FullCalendar internals. A plain HTML table with dnd-kit overlaid for drag-and-drop gives full control, produces a smaller bundle, and integrates naturally with the existing `@dnd-kit/*` packages already in the project.
 
 ### Staff Management View (`/staff`)
 
@@ -768,7 +775,7 @@ After Employee ID is validated (found in `staff` table), a session cookie is set
 │  Current block calendar (read-only)                   │
 │  Area filter: [All ▼] [X-Ray] [Ultrasound] [CT]       │
 │                                                       │
-│  FullCalendar view — same as /view but:               │
+│  Read-only roster grid — same layout as /view but:    │
 │  • The logged-in staff member's shifts are highlighted │
 │    automatically (no ID entry needed)                 │
 │  • Area filter is prominent for browsing colleagues   │
@@ -863,7 +870,7 @@ Warnings are **not persisted in the database** — they are computed on demand b
 │  ──────────────────────────────────────────────────────────  │
 │  Calendar View                    │  ⚠ Warnings Panel       │
 │                                   │  ─────────────────────  │
-│  [FullCalendar resource view]     │  ⚠ Leave conflict        │
+│  [Custom roster grid]             │  ⚠ Leave conflict        │
 │  Each assignment shows amber dot  │    Smith, J – Mon 5 May  │
 │  if it has an active warning      │    Morning | X-Ray       │
 │                                   │  ─────────────────────  │

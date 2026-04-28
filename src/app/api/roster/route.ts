@@ -75,9 +75,9 @@ export async function POST(request: Request) {
   if (templates && templates.length > 0) {
     const dates = datesInRange(start_date, end_date)
 
-    // day_of_week: 0=Sunday … 6=Saturday (matches JS Date.getUTCDay)
+    // day_of_week: 0=Monday … 6=Sunday (schema convention) — convert from JS getUTCDay (0=Sun)
     const instances = dates.flatMap(date => {
-      const dow = new Date(date + 'T00:00:00Z').getUTCDay()
+      const dow = (new Date(date + 'T00:00:00Z').getUTCDay() + 6) % 7
       return templates
         .filter(t => t.day_of_week === dow)
         .map(t => ({
