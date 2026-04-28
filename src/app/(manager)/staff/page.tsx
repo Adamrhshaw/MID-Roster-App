@@ -9,7 +9,6 @@ export default async function StaffPage() {
       .from('staff')
       .select(`
         *,
-        primary_area:areas!staff_primary_area_id_fkey(id, name),
         staff_areas(area_id, is_primary, area:areas(id, name))
       `)
       .order('full_name'),

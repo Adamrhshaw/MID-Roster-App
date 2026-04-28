@@ -4,13 +4,6 @@ import { useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import type { Area, Staff } from '@/types/database'
 
 export interface StaffFormValues {
@@ -19,7 +12,6 @@ export interface StaffFormValues {
   email: string
   phone: string
   fte_target: string
-  primary_area_id: string
   area_ids: string[]
 }
 
@@ -38,7 +30,6 @@ function defaultValues(initial?: Partial<StaffFormValues>): StaffFormValues {
     email: initial?.email ?? '',
     phone: initial?.phone ?? '',
     fte_target: initial?.fte_target ?? '1.0',
-    primary_area_id: initial?.primary_area_id ?? '',
     area_ids: initial?.area_ids ?? [],
   }
 }
@@ -50,7 +41,6 @@ export function staffToFormValues(staff: Staff): StaffFormValues {
     email: staff.email,
     phone: staff.phone ?? '',
     fte_target: String(staff.fte_target),
-    primary_area_id: staff.primary_area_id ?? '',
     area_ids: staff.areas?.map(a => a.id) ?? [],
   }
 }
@@ -121,25 +111,6 @@ export default function StaffForm({ areas, initial, onSubmit, onCancel, submitLa
           <Input id="sf-phone" type="tel" value={values.phone} onChange={e => set('phone', e.target.value)} placeholder="+61 400 000 000" />
         </div>
 
-        <div className="col-span-2 flex flex-col gap-1.5">
-          <Label>Primary area</Label>
-          <Select value={values.primary_area_id} onValueChange={v => {
-            const val = v ?? ''
-            set('primary_area_id', val)
-            if (val && !values.area_ids.includes(val)) {
-              set('area_ids', [...values.area_ids, val])
-            }
-          }}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select area…" />
-            </SelectTrigger>
-            <SelectContent>
-              {areas.map(a => (
-                <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
       </div>
 
       {areas.length > 0 && (

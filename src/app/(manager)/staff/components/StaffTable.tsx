@@ -114,11 +114,8 @@ export default function StaffTable({ initialStaff, areas }: Props) {
                         member.areas.map(a => (
                           <Badge key={a.id} variant="secondary" className="text-xs">
                             {a.name}
-                            {member.primary_area_id === a.id && ' ★'}
                           </Badge>
                         ))
-                      ) : member.primary_area ? (
-                        <Badge variant="secondary" className="text-xs">{member.primary_area.name} ★</Badge>
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>
                       )}

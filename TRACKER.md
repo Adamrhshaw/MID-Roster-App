@@ -45,12 +45,13 @@
 | Roster block page shell | ✅ |
 | Create roster block | ✅ |
 | Custom roster grid (staff rows × day columns, shift pills) | ✅ |
-| Drag-and-drop assignment editing (dnd-kit) | ⬜ |
-| Two-tier rule validation on drag | ⬜ |
-| Shift assignment popover | ⬜ |
-| Open/gap indicators | ⬜ |
-| Coverage bar (filled vs required per area) | ⬜ |
-| Warnings sidebar (all active violations) | ⬜ |
+| Drag-and-drop assignment editing (dnd-kit) | ✅ |
+| Two-tier rule validation on drag | ✅ |
+| Shift assignment popover (click open slot → assign staff) | ⬜ |
+| Open/gap indicators | ✅ |
+| Coverage bar (filled vs required per area) | ✅ |
+| Violations bell + popover (toolbar) | ✅ |
+| Violation click → jump to week + highlight cell | ⬜ |
 | Publish / archive block | ⬜ |
 
 ### Roster Generation
@@ -84,7 +85,7 @@
 | `certificationRequiredRule` | ✅ |
 | `areaCoverageRule` (min staff per shift) | ✅ |
 | `availabilityRule` (day-of-week availability) | ✅ |
-| Client-side warnings store (Zustand) | ⬜ |
+| Client-side warnings store (Zustand) | ✅ |
 
 ### Leave (`/leave`)
 
@@ -167,7 +168,7 @@
 4. ~~Custom roster grid — render read-only grid first (days × staff, shift pills)~~ ✅
 5. ~~Leave + Swap inboxes — wire real data + approve/reject~~ ✅
 6. ~~Vitest setup + rules engine (unit tests per rule, API integration tests for leave/swaps)~~ ✅
-7. Drag-and-drop + rule validation
+7. ~~Drag-and-drop + rule validation~~ ✅
 8. Roster generation algorithm (phases 1–5)
 9. Portal — leave + swap submission
 10. Email notifications (Resend)

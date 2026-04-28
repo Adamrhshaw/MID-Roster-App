@@ -24,11 +24,9 @@ export interface Staff {
   email: string
   phone: string | null
   fte_target: number
-  primary_area_id: string | null
   is_active: boolean
   created_at: string
   // joined
-  primary_area?: Area
   areas?: Area[]
 }
 
