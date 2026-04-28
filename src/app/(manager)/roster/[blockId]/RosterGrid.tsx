@@ -249,7 +249,7 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
   const storeStaff = useRosterStore(s => s.staff)
   const storeShifts = useRosterStore(s => s.shifts)
   const isHydrated = useRosterStore(s => s.blockId === blockId)
-  const highlightedShiftId = useRosterStore(s => s.highlightedShiftId)
+  const highlightedCell = useRosterStore(s => s.highlightedCell)
 
   useEffect(() => {
     fetch(`/api/roster/${blockId}/shifts`)
@@ -425,7 +425,7 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
   const hasWriteErrors = [...pendingWrites.current.values()].some(s => s === 'error')
 
   return (
-    <TooltipProvider delay={400}>
+    <TooltipProvider delay={120}>
     <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <div className="flex flex-col flex-1 min-h-0">
         {/* Toolbar */}
@@ -545,7 +545,7 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
                                     shiftInstanceId={shift.id}
                                     staffId={member.id}
                                     isOccupied={isAssigned}
-                                    isHighlighted={highlightedShiftId === shift.id}
+                                    isHighlighted={highlightedCell?.shiftInstanceId === shift.id && highlightedCell?.staffId === member.id}
                                   >
                                     {isAssigned && (
                                       <ShiftPill

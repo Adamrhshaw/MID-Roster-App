@@ -29,8 +29,8 @@ interface RosterState {
   // Violations (recomputed after changes)
   violations: Violation[]
 
-  // Shift instance ID to flash-highlight (set on violation click, auto-clears)
-  highlightedShiftId: string | null
+  // Cell to flash-highlight on violation click (shiftInstanceId + staffId, auto-clears)
+  highlightedCell: { shiftInstanceId: string; staffId: string } | null
 
   // Actions
   hydrate: (payload: {
@@ -51,8 +51,8 @@ interface RosterState {
   // Reassign a shift pill from one staff member to another (same shift instance)
   reassign: (shiftInstanceId: string, fromStaffId: string, toStaffId: string) => void
 
-  // Flash-highlight a shift instance cell (clears after 2s)
-  highlightShift: (shiftInstanceId: string) => void
+  // Flash-highlight a specific staff+shift cell (clears after 2s)
+  highlightCell: (shiftInstanceId: string, staffId: string) => void
 
   // Re-run rules for given staff IDs immediately, then schedule full recheck
   runRulesFor: (staffIds: string[]) => void
@@ -108,12 +108,15 @@ export const useRosterStore = create<RosterState>((set, get) => ({
   availability: [],
   assignments: [],
   violations: [],
-  highlightedShiftId: null,
+  highlightedCell: null,
 
-  highlightShift(shiftInstanceId) {
-    set({ highlightedShiftId: shiftInstanceId })
+  highlightCell(shiftInstanceId, staffId) {
+    set({ highlightedCell: { shiftInstanceId, staffId } })
     setTimeout(() => {
-      if (get().highlightedShiftId === shiftInstanceId) set({ highlightedShiftId: null })
+      const c = get().highlightedCell
+      if (c?.shiftInstanceId === shiftInstanceId && c?.staffId === staffId) {
+        set({ highlightedCell: null })
+      }
     }, 2000)
   },
 

@@ -14,7 +14,7 @@ export default function ViolationsPopover({ onJumpToWeek, blockStart }: Props) {
   const violations = useRosterStore(s => s.violations)
   const staff = useRosterStore(s => s.staff)
   const shifts = useRosterStore(s => s.shifts)
-  const highlightShift = useRosterStore(s => s.highlightShift)
+  const highlightCell = useRosterStore(s => s.highlightCell)
   const [open, setOpen] = useState(false)
 
   if (violations.length === 0) return null
@@ -56,7 +56,7 @@ export default function ViolationsPopover({ onJumpToWeek, blockStart }: Props) {
                   className="w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors"
                   onClick={() => {
                     if (weekOffset !== null) onJumpToWeek(weekOffset)
-                    if (v.shiftInstanceId) highlightShift(v.shiftInstanceId)
+                    if (v.shiftInstanceId && v.staffId) highlightCell(v.shiftInstanceId, v.staffId)
                     setOpen(false)
                   }}
                 >

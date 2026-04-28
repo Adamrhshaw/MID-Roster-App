@@ -47,7 +47,7 @@
 | Custom roster grid (staff rows × day columns, shift pills) | ✅ |
 | Drag-and-drop assignment editing (dnd-kit) | ✅ |
 | Two-tier rule validation on drag | ✅ |
-| Shift assignment popover (click open slot → assign staff) | ⬜ |
+| Shift assignment popover (click open slot → assign staff) | ✅ |
 | Open/gap indicators | ✅ |
 | Coverage bar (filled vs required per area) | ✅ |
 | Violations bell + popover (toolbar) | ✅ |
