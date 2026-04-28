@@ -82,18 +82,18 @@
 
 | Item | Status |
 |------|--------|
-| Leave inbox shell (Pending / Approved / Rejected) | 🔶 |
-| Fetch requests from Supabase | ⬜ |
-| Approve / reject with roster update | ⬜ |
+| Leave inbox shell (Pending / Approved / Rejected) | ✅ |
+| Fetch requests from Supabase | ✅ |
+| Approve / reject with roster update | ✅ |
 | Email notification (Resend) | ⬜ |
 
 ### Swaps (`/swaps`)
 
 | Item | Status |
 |------|--------|
-| Swap inbox shell | 🔶 |
-| Fetch requests from Supabase | ⬜ |
-| Approve / reject with assignment swap | ⬜ |
+| Swap inbox shell | ✅ |
+| Fetch requests from Supabase | ✅ |
+| Approve / reject with assignment swap | ✅ |
 | Email notification (Resend) | ⬜ |
 
 ### Settings (`/settings`)
@@ -157,7 +157,7 @@
 2. ~~Shift template editor — prerequisite for roster generation~~ ✅
 3. ~~Roster block creation — stamps `shift_instances` from templates~~ ✅
 4. ~~Custom roster grid — render read-only grid first (days × staff, shift pills)~~ ✅
-5. Leave + Swap inboxes — wire real data + approve/reject
+5. ~~Leave + Swap inboxes — wire real data + approve/reject~~ ✅
 6. Rules engine — pure TypeScript functions
 7. Drag-and-drop + rule validation
 8. Roster generation algorithm (phases 1–5)

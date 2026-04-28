@@ -1,9 +1,20 @@
+import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import SwapsTable from './components/SwapsTable'
+import { createClient as createServerClient } from '@/lib/supabase/server'
 
-export default async function SwapsPage() {
+async function requireAuth() {
+  if (process.env.DEV_BYPASS_AUTH === 'true') return { id: 'dev' }
+  const serverClient = await createServerClient()
+  const { data: { user } } = await serverClient.auth.getUser()
+  return user
+}
+
+export async function GET() {
+  const user = await requireAuth()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const supabase = createServiceClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('shift_swaps')
     .select(`
       *,
@@ -20,9 +31,6 @@ export default async function SwapsPage() {
     `)
     .order('created_at', { ascending: false })
 
-  return (
-    <div className="p-6">
-      <SwapsTable initialSwaps={data ?? []} />
-    </div>
-  )
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(data ?? [])
 }
