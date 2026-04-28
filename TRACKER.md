@@ -41,9 +41,9 @@
 
 | Item | Status |
 |------|--------|
-| Roster index → redirect to latest block | 🔶 |
-| Roster block page shell | 🔶 |
-| Create roster block | ⬜ |
+| Roster index → redirect to latest block | ✅ |
+| Roster block page shell | ✅ |
+| Create roster block | ✅ |
 | FullCalendar resource view (staff × shifts) | ⬜ |
 | Drag-and-drop assignment editing (dnd-kit) | ⬜ |
 | Two-tier rule validation on drag | ⬜ |
@@ -151,11 +151,11 @@
 
 ---
 
-## Suggested Build Order
+## Implementation Progress
 
 1. ~~Areas CRUD (`/settings/areas`) — unblocks templates and staff area selection~~ ✅
 2. ~~Shift template editor — prerequisite for roster generation~~ ✅
-3. Roster block creation — stamps `shift_instances` from templates
+3. ~~Roster block creation — stamps `shift_instances` from templates~~ ✅
 4. FullCalendar integration — render read-only roster view first
 5. Leave + Swap inboxes — wire real data + approve/reject
 6. Rules engine — pure TypeScript functions

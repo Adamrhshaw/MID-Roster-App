@@ -5,8 +5,10 @@
 Radiology Department staff rostering web app for NSW Health (MRS Award 2025).
 Three modalities: X-Ray, Ultrasound, CT. 3 shifts/day (morning/afternoon/night), 4-week roster blocks.
 
-See [TRACKER.md](TRACKER.md) for what is built vs what is outstanding.
-See the plan file for the full technical design document (schema, rules engine, generation algorithm, UI wireframes).
+
+See [DESIGN.md](DESIGN.md) for the full technical design document (schema, rules engine, generation algorithm, UI wireframes).
+See [TRACKER.md](TRACKER.md) for what is built vs what is outstanding. Always update the tracker after committing, including the Implentation progress section.
+
 
 ## Stack
 

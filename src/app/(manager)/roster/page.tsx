@@ -1,10 +1,10 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import CreateRosterBlockDialog from './components/CreateRosterBlockDialog'
 
 export default async function RosterIndexPage() {
   const supabase = await createClient()
 
-  // Redirect to the most recent non-archived block, or show empty state
   const { data: block } = await supabase
     .from('roster_blocks')
     .select('id')
@@ -19,8 +19,13 @@ export default async function RosterIndexPage() {
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 p-8">
-      <h1 className="text-xl font-semibold text-gray-700">No roster blocks yet</h1>
-      <p className="text-sm text-gray-500">Create your first roster block to get started.</p>
+      <div className="flex flex-col items-center gap-2 text-center">
+        <h1 className="text-lg font-semibold text-gray-800">No roster blocks yet</h1>
+        <p className="max-w-xs text-sm text-gray-500">
+          Create your first block to stamp shift instances from your configured templates.
+        </p>
+      </div>
+      <CreateRosterBlockDialog triggerLabel="Create first block" />
     </div>
   )
 }
