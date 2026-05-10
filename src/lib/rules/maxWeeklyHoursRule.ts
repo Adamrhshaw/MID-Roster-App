@@ -16,24 +16,26 @@ export const maxWeeklyHoursRule: Rule = (ctx) => {
   const violations: Violation[] = []
   const targetHours = ctx.staff.fte_target * STANDARD_WEEKLY_HOURS
 
-  // Group assignments by ISO week, sum hours
-  const weekHours = new Map<string, number>()
+  // Group assignments by ISO week, sum hours and track last shift instance
+  const weekData = new Map<string, { hours: number; lastShiftInstanceId: string }>()
   for (const a of ctx.assignments) {
     const si = a.shift_instance
-    // ADO shifts don't count as worked hours
     if (si.shift_type === 'ado') continue
 
     const week = isoWeek(si.shift_date)
     const start = new Date(`${si.shift_date}T${si.start_time}`)
     let end = new Date(`${si.shift_date}T${si.end_time}`)
-    // Night shift: end time 00:00 is next day
     if (end <= start) end.setDate(end.getDate() + 1)
     const hours = (end.getTime() - start.getTime()) / 3_600_000
 
-    weekHours.set(week, (weekHours.get(week) ?? 0) + hours)
+    const prev = weekData.get(week)
+    weekData.set(week, {
+      hours: (prev?.hours ?? 0) + hours,
+      lastShiftInstanceId: si.id,
+    })
   }
 
-  for (const [week, hours] of weekHours) {
+  for (const [, { hours, lastShiftInstanceId }] of weekData) {
     // Allow 10% tolerance to avoid floating-point noise
     if (hours > targetHours * 1.1) {
       violations.push({
@@ -42,6 +44,7 @@ export const maxWeeklyHoursRule: Rule = (ctx) => {
         name: 'Over FTE',
         message: `${hours.toFixed(1)} / ${targetHours}h`,
         staffId: ctx.staff.id,
+        shiftInstanceId: lastShiftInstanceId,
       })
     }
   }
