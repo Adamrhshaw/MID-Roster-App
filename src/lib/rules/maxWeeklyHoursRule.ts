@@ -16,8 +16,8 @@ export const maxWeeklyHoursRule: Rule = (ctx) => {
   const violations: Violation[] = []
   const targetHours = ctx.staff.fte_target * STANDARD_WEEKLY_HOURS
 
-  // Group assignments by ISO week, sum hours and track last shift instance
-  const weekData = new Map<string, { hours: number; lastShiftInstanceId: string }>()
+  // Group assignments by ISO week, sum hours and collect shift instances
+  const weekData = new Map<string, { hours: number; shiftInstanceIds: string[] }>()
   for (const a of ctx.assignments) {
     const si = a.shift_instance
     if (si.shift_type === 'ado') continue
@@ -31,21 +31,23 @@ export const maxWeeklyHoursRule: Rule = (ctx) => {
     const prev = weekData.get(week)
     weekData.set(week, {
       hours: (prev?.hours ?? 0) + hours,
-      lastShiftInstanceId: si.id,
+      shiftInstanceIds: [...(prev?.shiftInstanceIds ?? []), si.id],
     })
   }
 
-  for (const [, { hours, lastShiftInstanceId }] of weekData) {
+  for (const [, { hours, shiftInstanceIds }] of weekData) {
     // Allow 10% tolerance to avoid floating-point noise
     if (hours > targetHours * 1.1) {
-      violations.push({
-        rule: 'maxWeeklyHours',
-        severity: 'warning',
-        name: 'Over FTE',
-        message: `${hours.toFixed(1)} / ${targetHours}h`,
-        staffId: ctx.staff.id,
-        shiftInstanceId: lastShiftInstanceId,
-      })
+      for (const shiftInstanceId of shiftInstanceIds) {
+        violations.push({
+          rule: 'maxWeeklyHours',
+          severity: 'warning',
+          name: 'Over FTE',
+          message: `${hours.toFixed(1)} / ${targetHours}h`,
+          staffId: ctx.staff.id,
+          shiftInstanceId,
+        })
+      }
     }
   }
 
