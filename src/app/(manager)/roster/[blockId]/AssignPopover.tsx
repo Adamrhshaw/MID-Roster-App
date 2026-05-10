@@ -30,7 +30,6 @@ export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, a
   const assignments = useRosterStore(s => s.assignments)
   const violations = useRosterStore(s => s.violations)
 
-  const [loading, setLoading] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
 
   // Filter to staff certified for this area.
@@ -54,14 +53,9 @@ export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, a
     }
   }
 
-  async function handleAssign(staffId: string) {
-    setLoading(staffId)
-    try {
-      await onAssign(staffId)
-      setOpen(false)
-    } finally {
-      setLoading(null)
-    }
+  function handleAssign(staffId: string) {
+    setOpen(false)
+    void onAssign(staffId)
   }
 
   const d = new Date(shiftDate + 'T00:00:00Z')
@@ -95,12 +89,11 @@ export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, a
             {staff.map(member => {
               const isAssigned = assignedIds.has(member.id)
               const memberViolations = violationsByStaff.get(member.id) ?? []
-              const isLoading = loading === member.id
 
               return (
                 <li key={member.id}>
                   <button
-                    disabled={isAssigned || isLoading}
+                    disabled={isAssigned}
                     onClick={() => handleAssign(member.id)}
                     className={cn(
                       'w-full text-left px-3 py-1.5 text-xs flex items-center justify-between gap-2 transition-colors',
@@ -119,7 +112,6 @@ export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, a
                       <span className="text-gray-400 shrink-0">{(member.fte_target * 100).toFixed(0)}%</span>
                     </span>
                     {isAssigned && <Check className="h-3 w-3 text-green-500 shrink-0" />}
-                    {isLoading && <span className="text-[10px] text-gray-400 shrink-0">…</span>}
                   </button>
                 </li>
               )
