@@ -2,11 +2,11 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { notFound } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Wand2, Send } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Send } from 'lucide-react'
 import CreateRosterBlockDialog from '../components/CreateRosterBlockDialog'
 import BlockSwitcherDropdown from '../components/BlockSwitcherDropdown'
 import DeleteRosterBlockButton from '../components/DeleteRosterBlockButton'
+import GenerateDraftButton from '../components/GenerateDraftButton'
 import RosterGrid from './RosterGrid'
 import type { RosterBlock } from '@/types/database'
 
@@ -65,10 +65,7 @@ export default async function RosterBlockPage({ params }: Props) {
           {block.status === 'draft' && (
             <DeleteRosterBlockButton blockId={blockId} blockLabel={blockLabel} />
           )}
-          <Button variant="outline" size="sm" className="gap-1.5" disabled>
-            <Wand2 className="h-3.5 w-3.5" />
-            Generate Draft
-          </Button>
+          {block.status === 'draft' && <GenerateDraftButton blockId={blockId} />}
           <Button size="sm" className="gap-1.5" disabled={block.status !== 'draft'}>
             <Send className="h-3.5 w-3.5" />
             Publish

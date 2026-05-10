@@ -39,39 +39,42 @@
 
 ### Roster (`/roster`, `/roster/[blockId]`)
 
-| Item | Status |
-|------|--------|
-| Roster index → redirect to latest block | ✅ |
-| Roster block page shell | ✅ |
-| Create roster block | ✅ |
-| Roster grid — Core-Schedule-style (NT/AM/PM sections, area rows, staff chips) | ✅ |
-| Drag-and-drop: chip → empty cell = move; chip → chip = swap (cross-section allowed) | ✅ |
-| Two-tier rule validation on drag | ✅ |
-| Hover-plus → assign popover, filtered to staff certified for the area | ✅ |
-| Per-cell capacity indicator (filled / required) + bottom coverage bar | ✅ |
-| Violations bell + popover (toolbar) | ✅ |
-| Violation click → jump to week + highlight chip | ✅ |
-| Publish / archive block | ⬜ |
+| Item | Status | Notes |
+|------|--------|-------|
+| Roster index → redirect to latest block | ✅ | |
+| Roster block page shell | ✅ | |
+| Create roster block | ✅ | stamps shift_instances from active templates (Phase 1 of generation) |
+| Roster grid — Core-Schedule-style (NT/AM/PM sections, area rows, staff chips) | ✅ | |
+| Drag-and-drop: chip → empty cell = move; chip → chip = swap (cross-section allowed) | ✅ | |
+| Two-tier rule validation on drag | ✅ | warnings only — never blocks; generator uses same rules as hard constraints |
+| Hover-plus → assign popover, filtered to staff certified for the area | ✅ | |
+| Per-cell capacity indicator (filled / required) + bottom coverage bar | ✅ | |
+| Violations bell + popover (toolbar) | ✅ | |
+| Violation click → jump to week + highlight chip | ✅ | |
+| Publish / archive block | ⬜ | next blocker — gates a generated draft into a published roster (and into `/view`) |
 
 ### Roster Generation
 
-| Item | Status |
-|------|--------|
-| `POST /api/roster/[blockId]/generate` | ⬜ |
-| Phase 1 — template expansion | ⬜ |
-| Phase 2 — leave overlay | ⬜ |
-| Phase 3 — gap detection | ⬜ |
-| Phase 4 — greedy gap fill | ⬜ |
-| Phase 4b — ADO scheduling | ⬜ |
-| Phase 5 — generation report | ⬜ |
+| Item | Status | Notes |
+|------|--------|-------|
+| `POST /api/roster/[blockId]/generate` | ✅ | |
+| Phase 1 — template expansion | ✅ | done at block creation in `POST /api/roster` |
+| Phase 2 — leave overlay | ✅ | cancels assignments overlapping approved leave |
+| Phase 3 — gap detection | ✅ | priority: safety-critical → earlier date → night first |
+| Phase 4 — greedy gap fill | ✅ | hard constraints (rest, FTE, leave, area, availability); fairness via fewest-hours-first |
+| Phase 4b — ADO scheduling | ✅ | 22 min/shift accrual, 480 min threshold, defers + carries forward if no slot |
+| Phase 5 — generation report | ✅ | filled/preserved/cancelled/ado counts + unresolvable gap list |
+| Generate Draft button (manager UI) | ✅ | re-hydrates `rosterStore` after generation |
 
 ### Testing
 
-| Item | Status |
-|------|--------|
-| Vitest setup | ✅ |
-| Unit tests — rules engine (one per rule) | ✅ |
-| API integration tests — `/api/leave` and `/api/swaps/[id]` | ✅ |
+| Item | Status | Notes |
+|------|--------|-------|
+| Vitest setup | ✅ | requires `.env.local` with Supabase credentials |
+| Unit tests — rules engine (one per rule) | ✅ | `src/lib/rules/__tests__/` |
+| API integration tests — `/api/leave` and `/api/swaps/[id]` | ✅ | hit real DB; seed + clean per test |
+| Unit tests — generator phases (`src/lib/generator/`) | ⬜ | leaveOverlay / detectGaps / fillGaps / scheduleAdo all untested |
+| Integration test — `POST /api/roster/[blockId]/generate` | ⬜ | end-to-end: seed block + leave, generate, assert assignments + ado_accruals |
 
 ### Rules Engine (`src/lib/rules/`)
 
@@ -169,8 +172,10 @@
 6. ~~Vitest setup + rules engine (unit tests per rule, API integration tests for leave/swaps)~~ ✅
 7. ~~Drag-and-drop + rule validation~~ ✅
 8. ~~Restructure roster grid to Core-Schedule layout (AM/PM/NT × area rows, chip-in-cell)~~ ✅
-9. Roster generation algorithm (phases 1–5)
-10. Portal — leave + swap submission
-11. Email notifications (Resend)
-12. Export (CSV / XLSX)
-13. Visual design pass (`/frontend-design` skill)
+9. ~~Roster generation algorithm (phases 1–5)~~ ✅
+10. Publish / archive block — closes the draft → live → archived lifecycle and exposes blocks to `/view`
+11. Generator tests — phase-level unit tests + an end-to-end integration test against a seeded block
+12. Portal — leave + swap submission
+13. Email notifications (Resend)
+14. Export (CSV / XLSX)
+15. Visual design pass (`/frontend-design` skill)
