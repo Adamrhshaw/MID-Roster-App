@@ -22,9 +22,11 @@ interface Props {
   areaName: string
   onAssign: (staffId: string) => Promise<void>
   trigger?: React.ReactElement
+  /** Set false when the trigger is not a native <button> element (e.g. a span). */
+  nativeButton?: boolean
 }
 
-export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, areaId, areaName, onAssign, trigger }: Props) {
+export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, areaId, areaName, onAssign, trigger, nativeButton = true }: Props) {
   const allStaff = useRosterStore(s => s.staff)
   const staffAreas = useRosterStore(s => s.staffAreas)
   const assignments = useRosterStore(s => s.assignments)
@@ -73,7 +75,7 @@ export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, a
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger render={trigger ?? defaultTrigger} />
+      <PopoverTrigger nativeButton={nativeButton} render={trigger ?? defaultTrigger} />
       <PopoverContent className="w-56 p-0" side="bottom" align="start">
         <div className="px-3 py-2 border-b border-gray-100">
           <div className="text-xs font-semibold text-gray-700">

@@ -102,6 +102,12 @@ interface StaffChipProps {
   isHighlighted: boolean
   onRemove: () => void
   isDragOverlay?: boolean
+  // Replacement-popover context (omitted on the drag overlay)
+  areaId?: string
+  areaName?: string
+  shiftType?: ShiftType
+  shiftDate?: string
+  onReplace?: (newStaffId: string) => void
 }
 
 function StaffChip({
@@ -112,6 +118,11 @@ function StaffChip({
   isHighlighted,
   onRemove,
   isDragOverlay,
+  areaId,
+  areaName,
+  shiftType,
+  shiftDate,
+  onReplace,
 }: StaffChipProps) {
   const dragId = chipDragId(shiftInstanceId, staffId)
   const drag = useDraggable({ id: dragId, disabled: isDragOverlay })
@@ -124,7 +135,7 @@ function StaffChip({
 
   const hasViolations = violations.length > 0
 
-  const chip = (
+  const chipSpan = (
     <span
       ref={setRef}
       {...drag.listeners}
@@ -158,11 +169,37 @@ function StaffChip({
     </span>
   )
 
-  if (!hasViolations || isDragOverlay) return chip
+  const canReplace =
+    !isDragOverlay && !!onReplace && !!areaId && !!areaName && !!shiftType && !!shiftDate
+
+  // Inner trigger: chip wrapped in TooltipTrigger when violations need a hover popup.
+  // The TooltipTrigger element itself becomes the PopoverTrigger render target —
+  // base-ui composes refs/handlers down to the underlying span so both popups work.
+  const innerTrigger = hasViolations && !isDragOverlay
+    ? <TooltipTrigger render={chipSpan} />
+    : chipSpan
+
+  const withPopover = canReplace ? (
+    <AssignPopover
+      shiftInstanceId={shiftInstanceId}
+      shiftType={shiftType!}
+      shiftDate={shiftDate!}
+      areaId={areaId!}
+      areaName={areaName!}
+      nativeButton={false}
+      onAssign={async (newStaffId) => {
+        if (newStaffId === staffId) return
+        onReplace!(newStaffId)
+      }}
+      trigger={innerTrigger}
+    />
+  ) : innerTrigger
+
+  if (!hasViolations || isDragOverlay) return withPopover
 
   return (
     <Tooltip>
-      <TooltipTrigger render={chip} />
+      {withPopover}
       <TooltipContent side="top" className="max-w-56 whitespace-normal">
         <div className="space-y-1">
           <div className="font-medium">{fullName}</div>
@@ -579,6 +616,16 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
                                     onRemove={() => {
                                       unassignAction(shift.id, staffId)
                                       persistUnassign(shift.id, staffId)
+                                    }}
+                                    areaId={area.id}
+                                    areaName={area.name}
+                                    shiftType={shiftType}
+                                    shiftDate={date}
+                                    onReplace={(newStaffId) => {
+                                      unassignAction(shift.id, staffId)
+                                      assignAction(shift.id, newStaffId)
+                                      void persistUnassign(shift.id, staffId)
+                                      void persistAssign(shift.id, newStaffId)
                                     }}
                                   />
                                 )
