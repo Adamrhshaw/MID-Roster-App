@@ -3,14 +3,12 @@ import { fmtDate } from './dateFormat'
 
 const MINIMUM_REST_MINUTES = 10 * 60 // 10 hours
 
-function shiftEndMs(date: string, endTime: string): number {
-  // Night shifts end at 00:00 — treat as next calendar day
-  if (endTime === '00:00:00' || endTime === '00:00') {
-    const d = new Date(`${date}T00:00:00`)
-    d.setDate(d.getDate() + 1)
-    return d.getTime()
-  }
-  return new Date(`${date}T${endTime}`).getTime()
+function shiftEndMs(date: string, startTime: string, endTime: string): number {
+  const start = new Date(`${date}T${startTime}`).getTime()
+  let end = new Date(`${date}T${endTime}`).getTime()
+  // If end is at or before start the shift crosses midnight — push end to next day
+  if (end <= start) end += 24 * 60 * 60 * 1000
+  return end
 }
 
 function shiftStartMs(date: string, startTime: string): number {
@@ -31,7 +29,7 @@ export const minimumRestPeriodRule: Rule = (ctx) => {
     const current = sorted[i]
     const next = sorted[i + 1]
 
-    const endMs = shiftEndMs(current.shift_instance.shift_date, current.shift_instance.end_time)
+    const endMs = shiftEndMs(current.shift_instance.shift_date, current.shift_instance.start_time, current.shift_instance.end_time)
     const nextStartMs = shiftStartMs(next.shift_instance.shift_date, next.shift_instance.start_time)
     const restMinutes = (nextStartMs - endMs) / 60_000
 

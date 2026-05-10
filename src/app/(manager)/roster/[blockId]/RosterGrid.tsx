@@ -23,7 +23,7 @@ import AssignPopover from './AssignPopover'
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-const SECTION_ORDER: Exclude<ShiftType, 'ado'>[] = ['morning', 'afternoon', 'night']
+const SECTION_ORDER: Exclude<ShiftType, 'ado'>[] = ['night', 'morning', 'afternoon']
 
 const SHIFT_LABEL: Record<ShiftType, string> = {
   morning: 'AM',
