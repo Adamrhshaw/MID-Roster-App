@@ -195,7 +195,7 @@ function CellDropZone({
     <div
       ref={setNodeRef}
       className={cn(
-        'flex flex-col gap-0.5 min-h-[28px] rounded transition-colors',
+        'flex flex-col gap-0.5 h-full min-h-[28px] rounded transition-colors',
         isOver && 'bg-blue-50 ring-1 ring-blue-300',
         className,
       )}
@@ -553,13 +553,13 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
                         <td
                           key={date}
                           className={cn(
-                            'border-b border-r border-gray-100 p-1 align-top group',
+                            'border-b border-r border-gray-100 p-1 align-top group h-px',
                             isWeekend(date) && 'bg-gray-50/60',
                             isFullyFilled && 'bg-green-50',
                           )}
                         >
                           {!shift ? (
-                            <div className="min-h-[28px] rounded bg-[repeating-linear-gradient(45deg,transparent,transparent_4px,rgb(243_244_246)_4px,rgb(243_244_246)_5px)]" />
+                            <div className="h-full min-h-[28px] rounded bg-[repeating-linear-gradient(45deg,transparent,transparent_4px,rgb(243_244_246)_4px,rgb(243_244_246)_5px)]" />
                           ) : (
                             <CellDropZone shiftInstanceId={shift.id}>
                               {assignedIds.map(staffId => {
@@ -597,7 +597,7 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
                                 trigger={
                                   <button
                                     type="button"
-                                    className="flex items-center justify-center gap-1 rounded border border-dashed border-gray-300 px-1 py-0.5 text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-colors"
+                                    className="flex flex-1 min-h-[20px] items-center justify-center gap-1 rounded border border-dashed border-gray-300 px-1 py-0.5 text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 hover:border-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
                                     title={`Assign staff to ${area.name} ${SHIFT_LABEL[shiftType]} on ${shortDate(date)}`}
                                   >
                                     <Plus className="h-3 w-3" />
