@@ -65,7 +65,8 @@ See [TRACKER.md](TRACKER.md) for what is built vs what is outstanding. Always up
 
 - Standard week = **35 hours** (Diagnostic Radiographers, MRS Award 2025)
 - Part-time staff use `fte_target` (e.g. 0.5 = 17.5h/week)
-- Shifts: Morning 08:00–16:00, Afternoon 16:00–00:00, Night 00:00–08:00
+- Shifts: Night 00:00–08:00, Morning 08:00–16:00, Afternoon 16:00–00:00 (chronological order within the calendar day)
+- **Grid section order is NT → AM → PM** (top to bottom), matching actual time-of-day. "NT on date D" = 00:00–08:00 of date D — it is the *first* shift of that calendar day, not the overnight shift of D−1. If you want to model back-to-back overnight coverage, the violation scenario is PM on Day D → AM on Day D+1 (8h rest).
 - **ADO accrual**: 38-min unpaid break per shift; 22 min accrues toward ADO. ~480 min threshold = 1 ADO day. Carry-forward tracked in `ado_accruals`.
 - **All rule violations are warnings only** — no hard blocks on manual changes. Manager has final authority.
 - `staff_classifications` table intentionally excluded — award level tracking not needed for rostering.
@@ -94,7 +95,7 @@ src/
   app/
     (manager)/          ← protected; requires Supabase Auth session
       staff/            ← ✅ fully implemented
-      roster/[blockId]/ ← ✅ Core-Schedule-style grid: AM/PM/NT sticky sections,
+      roster/[blockId]/ ← ✅ Core-Schedule-style grid: NT/AM/PM sticky sections,
       │                       area rows, staff chips. Hover-+ adds (filtered to
       │                       certified staff); click chip replaces; × removes;
       │                       DnD chip→empty cell = move, chip→chip = swap.
