@@ -34,11 +34,11 @@ export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, a
 
   const [open, setOpen] = useState(false)
 
-  // Filter to staff certified for this area.
-  const certifiedStaffIds = new Set(
+  // Filter to staff eligible for this area (via staff_areas).
+  const eligibleStaffIds = new Set(
     staffAreas.filter(sa => sa.area_id === areaId).map(sa => sa.staff_id),
   )
-  const staff = allStaff.filter(s => certifiedStaffIds.has(s.id))
+  const staff = allStaff.filter(s => eligibleStaffIds.has(s.id))
 
   // Staff already assigned to this shift
   const assignedIds = new Set(
@@ -85,7 +85,7 @@ export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, a
         </div>
 
         {staff.length === 0 ? (
-          <div className="px-3 py-3 text-xs text-gray-400">No staff certified for {areaName}</div>
+          <div className="px-3 py-3 text-xs text-gray-400">No staff eligible for {areaName}</div>
         ) : (
           <ul className="max-h-60 overflow-y-auto py-1">
             {staff.map(member => {
