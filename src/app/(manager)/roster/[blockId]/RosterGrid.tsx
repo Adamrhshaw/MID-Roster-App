@@ -547,6 +547,7 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
                       const assignedIds = shift ? (assignmentsByShift[shift.id] ?? []) : []
                       const required = (area as ApiArea).min_staff_per_shift
                       const filled = assignedIds.length
+                      const isFullyFilled = !!shift && required > 0 && filled >= required
 
                       return (
                         <td
@@ -554,6 +555,7 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
                           className={cn(
                             'border-b border-r border-gray-100 p-1 align-top group',
                             isWeekend(date) && 'bg-gray-50/60',
+                            isFullyFilled && 'bg-green-50',
                           )}
                         >
                           {!shift ? (
@@ -603,8 +605,6 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
                                   </button>
                                 }
                               />
-
-                              <CapacityIndicator filled={filled} required={required} />
                             </CellDropZone>
                           )}
                         </td>
@@ -657,25 +657,3 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
   )
 }
 
-// ── CapacityIndicator ────────────────────────────────────────────────────────
-
-function CapacityIndicator({ filled, required }: { filled: number; required: number }) {
-  if (required === 0) return null
-  if (filled === required) {
-    return <div className="text-[10px] text-gray-400 leading-none mt-0.5">{filled}/{required}</div>
-  }
-  if (filled > required) {
-    return (
-      <div className="flex items-center gap-0.5 text-[10px] text-red-500 leading-none mt-0.5">
-        <span>{filled}/{required}</span>
-        <AlertTriangle className="h-2.5 w-2.5" />
-      </div>
-    )
-  }
-  return (
-    <div className="flex items-center gap-0.5 text-[10px] text-amber-600 leading-none mt-0.5">
-      <span>{filled}/{required}</span>
-      <AlertTriangle className="h-2.5 w-2.5" />
-    </div>
-  )
-}
