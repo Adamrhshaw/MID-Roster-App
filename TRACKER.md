@@ -51,7 +51,7 @@
 | Per-cell capacity indicator (filled / required) + bottom coverage bar | ✅ | |
 | Violations bell + popover (toolbar) | ✅ | |
 | Violation click → jump to week + highlight chip | ✅ | |
-| Publish / archive block | ⬜ | next blocker — gates a generated draft into a published roster (and into `/view`) |
+| Publish / archive block | ✅ | `POST /api/roster/[blockId]/publish` (with `?force=true` override for unresolvable gaps) and `POST .../archive` (idempotent); header buttons: Publish (draft) / Archive (published) |
 
 ### Roster Generation
 
@@ -173,7 +173,7 @@
 7. ~~Drag-and-drop + rule validation~~ ✅
 8. ~~Restructure roster grid to Core-Schedule layout (AM/PM/NT × area rows, chip-in-cell)~~ ✅
 9. ~~Roster generation algorithm (phases 1–5)~~ ✅
-10. Publish / archive block — closes the draft → live → archived lifecycle and exposes blocks to `/view`
+10. ~~Publish / archive block — closes the draft → live → archived lifecycle and exposes blocks to `/view`~~ ✅
 11. Generator tests — phase-level unit tests + an end-to-end integration test against a seeded block
 12. Portal — leave + swap submission
 13. Email notifications (Resend)

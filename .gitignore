@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/playwright-report
+/test-results
 
 # next.js
 /.next/
@@ -43,3 +45,6 @@ next-env.d.ts
 # claude code tooling
 .claude/
 skills-lock.json
+
+# supabase cli local cache (linked-project state, version pins)
+supabase/.temp/

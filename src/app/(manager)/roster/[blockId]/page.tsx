@@ -1,12 +1,12 @@
 import { createServiceClient } from '@/lib/supabase/service'
 import { notFound } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Send } from 'lucide-react'
 import CreateRosterBlockDialog from '../components/CreateRosterBlockDialog'
 import BlockSwitcherDropdown from '../components/BlockSwitcherDropdown'
 import DeleteRosterBlockButton from '../components/DeleteRosterBlockButton'
 import GenerateDraftButton from '../components/GenerateDraftButton'
+import PublishBlockButton from '../components/PublishBlockButton'
+import ArchiveBlockButton from '../components/ArchiveBlockButton'
 import RosterGrid from './RosterGrid'
 import type { RosterBlock } from '@/types/database'
 
@@ -55,7 +55,7 @@ export default async function RosterBlockPage({ params }: Props) {
             currentLabel={blockLabel}
             blocks={sortedById}
           />
-          <Badge variant={statusVariant[block.status] ?? 'secondary'} className="capitalize">
+          <Badge variant={statusVariant[block.status] ?? 'secondary'} className="capitalize" data-testid="block-status-badge">
             {block.status}
           </Badge>
         </div>
@@ -63,13 +63,15 @@ export default async function RosterBlockPage({ params }: Props) {
         <div className="flex items-center gap-2">
           <CreateRosterBlockDialog triggerVariant="outline" />
           {block.status === 'draft' && (
-            <DeleteRosterBlockButton blockId={blockId} blockLabel={blockLabel} />
+            <>
+              <DeleteRosterBlockButton blockId={blockId} blockLabel={blockLabel} />
+              <GenerateDraftButton blockId={blockId} />
+              <PublishBlockButton blockId={blockId} />
+            </>
           )}
-          {block.status === 'draft' && <GenerateDraftButton blockId={blockId} />}
-          <Button size="sm" className="gap-1.5" disabled={block.status !== 'draft'}>
-            <Send className="h-3.5 w-3.5" />
-            Publish
-          </Button>
+          {block.status === 'published' && (
+            <ArchiveBlockButton blockId={blockId} blockLabel={blockLabel} />
+          )}
         </div>
       </div>
 
