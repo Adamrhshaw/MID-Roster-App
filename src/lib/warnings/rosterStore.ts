@@ -78,16 +78,26 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 function runRules(
   staffIds: string[],
-  state: Pick<RosterState, 'staff' | 'assignments' | 'shifts' | 'areas' | 'leaveRequests' | 'availability' | 'blockStart' | 'blockEnd'>
+  state: Pick<RosterState, 'staff' | 'assignments' | 'shifts' | 'areas' | 'staffAreas' | 'leaveRequests' | 'availability' | 'blockStart' | 'blockEnd'>
 ): Violation[] {
   const targetIds = new Set(staffIds)
   const violations: Violation[] = []
+
+  // Build staffId → Area[] map for certificationRequiredRule
+  const areaMap = new Map(state.areas.map(a => [a.id, a]))
+  const staffAreaMap = new Map<string, import('@/types/database').Area[]>()
+  for (const sa of state.staffAreas) {
+    const area = areaMap.get(sa.area_id)
+    if (!area) continue
+    if (!staffAreaMap.has(sa.staff_id)) staffAreaMap.set(sa.staff_id, [])
+    staffAreaMap.get(sa.staff_id)!.push(area)
+  }
 
   for (const s of state.staff) {
     if (!targetIds.has(s.id)) continue
     const staffAssignments = state.assignments.filter(a => a.staff_id === s.id)
     const ctx = {
-      staff: s,
+      staff: { ...s, areas: staffAreaMap.get(s.id) ?? [] },
       assignments: staffAssignments,
       leaveRequests: state.leaveRequests.filter(l => l.staff_id === s.id),
       availability: state.availability.filter(av => av.staff_id === s.id),
