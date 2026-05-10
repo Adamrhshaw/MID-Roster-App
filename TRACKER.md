@@ -44,14 +44,13 @@
 | Roster index → redirect to latest block | ✅ |
 | Roster block page shell | ✅ |
 | Create roster block | ✅ |
-| Custom roster grid (staff rows × day columns, shift pills) | ✅ |
-| Drag-and-drop assignment editing (dnd-kit) | ✅ |
+| Roster grid — Core-Schedule-style (AM/PM/NT sections, area rows, staff chips) | ✅ |
+| Drag-and-drop: chip → empty cell = move; chip → chip = swap (cross-section allowed) | ✅ |
 | Two-tier rule validation on drag | ✅ |
-| Shift assignment popover (click open slot → assign staff) | ✅ |
-| Open/gap indicators | ✅ |
-| Coverage bar (filled vs required per area) | ✅ |
+| Hover-plus → assign popover, filtered to staff certified for the area | ✅ |
+| Per-cell capacity indicator (filled / required) + bottom coverage bar | ✅ |
 | Violations bell + popover (toolbar) | ✅ |
-| Violation click → jump to week + highlight cell | ✅ |
+| Violation click → jump to week + highlight chip | ✅ |
 | Publish / archive block | ⬜ |
 
 ### Roster Generation
@@ -169,8 +168,9 @@
 5. ~~Leave + Swap inboxes — wire real data + approve/reject~~ ✅
 6. ~~Vitest setup + rules engine (unit tests per rule, API integration tests for leave/swaps)~~ ✅
 7. ~~Drag-and-drop + rule validation~~ ✅
-8. Roster generation algorithm (phases 1–5)
-9. Portal — leave + swap submission
-10. Email notifications (Resend)
-11. Export (CSV / XLSX)
-12. Visual design pass (`/frontend-design` skill)
+8. ~~Restructure roster grid to Core-Schedule layout (AM/PM/NT × area rows, chip-in-cell)~~ ✅
+9. Roster generation algorithm (phases 1–5)
+10. Portal — leave + swap submission
+11. Email notifications (Resend)
+12. Export (CSV / XLSX)
+13. Visual design pass (`/frontend-design` skill)

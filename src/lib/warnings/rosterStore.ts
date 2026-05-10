@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Assignment, Area, LeaveRequest, ShiftInstance, Staff, StaffAvailability } from '@/types/database'
+import type { Assignment, Area, LeaveRequest, ShiftInstance, Staff, StaffArea, StaffAvailability } from '@/types/database'
 import type { Violation } from '@/lib/rules/types'
 import {
   minimumRestPeriodRule,
@@ -20,6 +20,7 @@ interface RosterState {
   staff: Staff[]
   shifts: ShiftInstance[]
   areas: Area[]
+  staffAreas: StaffArea[]
   leaveRequests: LeaveRequest[]
   availability: StaffAvailability[]
 
@@ -40,6 +41,7 @@ interface RosterState {
     staff: Staff[]
     shifts: ShiftInstance[]
     areas: Area[]
+    staffAreas: StaffArea[]
     assignments: RichAssignment[]
     leaveRequests: LeaveRequest[]
     availability: StaffAvailability[]
@@ -48,8 +50,19 @@ interface RosterState {
   // Assign a staff member to a shift instance (no prior assignment required)
   assign: (shiftInstanceId: string, staffId: string) => void
 
-  // Reassign a shift pill from one staff member to another (same shift instance)
-  reassign: (shiftInstanceId: string, fromStaffId: string, toStaffId: string) => void
+  // Cancel a single assignment.
+  unassign: (shiftInstanceId: string, staffId: string) => void
+
+  // Move a staff member from one shift instance to another (DnD onto empty cell space).
+  move: (staffId: string, fromShiftInstanceId: string, toShiftInstanceId: string) => void
+
+  // Swap two staff members between shift instances (DnD chip-onto-chip).
+  swap: (
+    aStaffId: string,
+    aShiftInstanceId: string,
+    bStaffId: string,
+    bShiftInstanceId: string,
+  ) => void
 
   // Flash-highlight a specific staff+shift cell (clears after 2s)
   highlightCell: (shiftInstanceId: string, staffId: string) => void
@@ -104,6 +117,7 @@ export const useRosterStore = create<RosterState>((set, get) => ({
   staff: [],
   shifts: [],
   areas: [],
+  staffAreas: [],
   leaveRequests: [],
   availability: [],
   assignments: [],
@@ -128,6 +142,7 @@ export const useRosterStore = create<RosterState>((set, get) => ({
       staff: payload.staff,
       shifts: payload.shifts,
       areas: payload.areas,
+      staffAreas: payload.staffAreas,
       assignments: payload.assignments,
       leaveRequests: payload.leaveRequests,
       availability: payload.availability,
@@ -162,26 +177,91 @@ export const useRosterStore = create<RosterState>((set, get) => ({
     get().runRulesFor([staffId])
   },
 
-  reassign(shiftInstanceId, fromStaffId, toStaffId) {
+  unassign(shiftInstanceId, staffId) {
     const state = get()
-    const shiftInstance = state.shifts.find(s => s.id === shiftInstanceId)
-    if (!shiftInstance) return
+    set({
+      assignments: state.assignments.filter(
+        a => !(a.shift_instance_id === shiftInstanceId && a.staff_id === staffId),
+      ),
+    })
+    get().runRulesFor([staffId])
+  },
 
-    const updated = state.assignments
-      .filter(a => !(a.shift_instance_id === shiftInstanceId && a.staff_id === fromStaffId))
-      .concat({
-        id: `pending-${shiftInstanceId}-${toStaffId}`,
-        shift_instance_id: shiftInstanceId,
-        staff_id: toStaffId,
-        status: 'draft' as const,
-        source: 'manual' as const,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        shift_instance: shiftInstance,
-      })
+  move(staffId, fromShiftInstanceId, toShiftInstanceId) {
+    const state = get()
+    if (fromShiftInstanceId === toShiftInstanceId) return
+    const toShift = state.shifts.find(s => s.id === toShiftInstanceId)
+    if (!toShift) return
 
-    set({ assignments: updated })
-    get().runRulesFor([fromStaffId, toStaffId])
+    const now = new Date().toISOString()
+    const filtered = state.assignments.filter(
+      a => !(a.shift_instance_id === fromShiftInstanceId && a.staff_id === staffId),
+    )
+    // No-op if the staff is already on the target.
+    const alreadyOnTarget = filtered.some(
+      a => a.shift_instance_id === toShiftInstanceId && a.staff_id === staffId,
+    )
+
+    set({
+      assignments: alreadyOnTarget
+        ? filtered
+        : [
+            ...filtered,
+            {
+              id: `pending-${toShiftInstanceId}-${staffId}`,
+              shift_instance_id: toShiftInstanceId,
+              staff_id: staffId,
+              status: 'confirmed' as const,
+              source: 'manual' as const,
+              created_at: now,
+              updated_at: now,
+              shift_instance: toShift,
+            },
+          ],
+    })
+    get().runRulesFor([staffId])
+  },
+
+  swap(aStaffId, aShiftInstanceId, bStaffId, bShiftInstanceId) {
+    const state = get()
+    const aShift = state.shifts.find(s => s.id === aShiftInstanceId)
+    const bShift = state.shifts.find(s => s.id === bShiftInstanceId)
+    if (!aShift || !bShift) return
+
+    const now = new Date().toISOString()
+    // Remove both originals, then add the swapped pair.
+    const filtered = state.assignments.filter(
+      a =>
+        !(a.shift_instance_id === aShiftInstanceId && a.staff_id === aStaffId) &&
+        !(a.shift_instance_id === bShiftInstanceId && a.staff_id === bStaffId),
+    )
+
+    set({
+      assignments: [
+        ...filtered,
+        {
+          id: `pending-${bShiftInstanceId}-${aStaffId}`,
+          shift_instance_id: bShiftInstanceId,
+          staff_id: aStaffId,
+          status: 'confirmed' as const,
+          source: 'manual' as const,
+          created_at: now,
+          updated_at: now,
+          shift_instance: bShift,
+        },
+        {
+          id: `pending-${aShiftInstanceId}-${bStaffId}`,
+          shift_instance_id: aShiftInstanceId,
+          staff_id: bStaffId,
+          status: 'confirmed' as const,
+          source: 'manual' as const,
+          created_at: now,
+          updated_at: now,
+          shift_instance: aShift,
+        },
+      ],
+    })
+    get().runRulesFor([aStaffId, bStaffId])
   },
 
   runRulesFor(staffIds) {

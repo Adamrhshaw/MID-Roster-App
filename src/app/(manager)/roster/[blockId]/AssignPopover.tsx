@@ -18,17 +18,26 @@ interface Props {
   shiftInstanceId: string
   shiftType: ShiftType
   shiftDate: string
+  areaId: string
   areaName: string
   onAssign: (staffId: string) => Promise<void>
+  trigger?: React.ReactElement
 }
 
-export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, areaName, onAssign }: Props) {
-  const staff = useRosterStore(s => s.staff)
+export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, areaId, areaName, onAssign, trigger }: Props) {
+  const allStaff = useRosterStore(s => s.staff)
+  const staffAreas = useRosterStore(s => s.staffAreas)
   const assignments = useRosterStore(s => s.assignments)
   const violations = useRosterStore(s => s.violations)
 
   const [loading, setLoading] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
+
+  // Filter to staff certified for this area.
+  const certifiedStaffIds = new Set(
+    staffAreas.filter(sa => sa.area_id === areaId).map(sa => sa.staff_id),
+  )
+  const staff = allStaff.filter(s => certifiedStaffIds.has(s.id))
 
   // Staff already assigned to this shift
   const assignedIds = new Set(
@@ -58,19 +67,19 @@ export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, a
   const d = new Date(shiftDate + 'T00:00:00Z')
   const dateLabel = `${d.getUTCDate()}/${d.getUTCMonth() + 1}`
 
+  const defaultTrigger = (
+    <button
+      className="inline-flex items-center gap-0.5 rounded border border-dashed border-gray-300 px-1 py-px text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-colors leading-tight"
+      title={`Assign staff to ${areaName} ${SHIFT_LABEL[shiftType]} on ${dateLabel}`}
+    >
+      <UserPlus className="h-2.5 w-2.5" />
+      <span className="font-medium">{SHIFT_LABEL[shiftType]}</span>
+    </button>
+  )
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={
-          <button
-            className="inline-flex items-center gap-0.5 rounded border border-dashed border-gray-300 px-1 py-px text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-colors leading-tight"
-            title={`Assign staff to ${areaName} ${SHIFT_LABEL[shiftType]} on ${dateLabel}`}
-          >
-            <UserPlus className="h-2.5 w-2.5" />
-            <span className="font-medium">{SHIFT_LABEL[shiftType]}</span>
-          </button>
-        }
-      />
+      <PopoverTrigger render={trigger ?? defaultTrigger} />
       <PopoverContent className="w-56 p-0" side="bottom" align="start">
         <div className="px-3 py-2 border-b border-gray-100">
           <div className="text-xs font-semibold text-gray-700">
@@ -80,7 +89,7 @@ export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, a
         </div>
 
         {staff.length === 0 ? (
-          <div className="px-3 py-3 text-xs text-gray-400">No active staff</div>
+          <div className="px-3 py-3 text-xs text-gray-400">No staff certified for {areaName}</div>
         ) : (
           <ul className="max-h-60 overflow-y-auto py-1">
             {staff.map(member => {

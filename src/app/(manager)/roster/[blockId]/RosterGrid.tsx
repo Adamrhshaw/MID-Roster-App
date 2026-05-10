@@ -5,16 +5,17 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  useDraggable,
+  useDroppable,
   useSensor,
   useSensors,
   type DragStartEvent,
   type DragEndEvent,
 } from '@dnd-kit/core'
-import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { cn } from '@/lib/utils'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Plus, X } from 'lucide-react'
 import type { ShiftType } from '@/types/database'
-import { useRosterStore, type RichAssignment } from '@/lib/warnings/rosterStore'
+import { useRosterStore } from '@/lib/warnings/rosterStore'
 import type { Violation } from '@/lib/rules/types'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
 import ViolationsPopover from './ViolationsPopover'
@@ -22,7 +23,7 @@ import AssignPopover from './AssignPopover'
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-const SHIFT_ORDER: ShiftType[] = ['morning', 'afternoon', 'night', 'ado']
+const SECTION_ORDER: Exclude<ShiftType, 'ado'>[] = ['morning', 'afternoon', 'night']
 
 const SHIFT_LABEL: Record<ShiftType, string> = {
   morning: 'AM',
@@ -31,21 +32,16 @@ const SHIFT_LABEL: Record<ShiftType, string> = {
   ado: 'ADO',
 }
 
-const SHIFT_COLOURS: Record<ShiftType, string> = {
-  morning: 'bg-blue-100 text-blue-800 border-blue-200',
-  afternoon: 'bg-amber-100 text-amber-800 border-amber-200',
-  night: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-  ado: 'bg-green-100 text-green-800 border-green-200',
-}
-
-const OPEN_COLOURS: Record<ShiftType, string> = {
-  morning: 'border-blue-300 text-blue-300',
-  afternoon: 'border-amber-300 text-amber-300',
-  night: 'border-indigo-300 text-indigo-300',
-  ado: 'border-green-300 text-green-300',
+const SECTION_TINT: Record<Exclude<ShiftType, 'ado'>, string> = {
+  morning: 'bg-blue-50/70 text-blue-700',
+  afternoon: 'bg-amber-50/70 text-amber-700',
+  night: 'bg-indigo-50/70 text-indigo-700',
 }
 
 const DAY_ABBR = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+// Sticky offset (in px) below the date row where section headers anchor.
+const SECTION_STICKY_TOP = 40
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -75,75 +71,101 @@ function isWeekend(date: string): boolean {
   return dow >= 5
 }
 
-// ── Drag ID encoding ─────────────────────────────────────────────────────────
-// draggable id: `pill::{shiftInstanceId}::{staffId}`
-// droppable id: `cell::{shiftInstanceId}::{staffId}` (target staff row × same shift instance)
+// ── Drag/drop ID encoding ────────────────────────────────────────────────────
+//   draggable: `chip::{shiftInstanceId}::{staffId}`
+//   cell drop: `cell::{shiftInstanceId}`        (move target — empty cell space)
+//   chip drop: `swap::{shiftInstanceId}::{staffId}` (swap target — another chip)
 
-function pillId(shiftInstanceId: string, staffId: string) {
-  return `pill::${shiftInstanceId}::${staffId}`
+function chipDragId(shiftInstanceId: string, staffId: string) {
+  return `chip::${shiftInstanceId}::${staffId}`
+}
+function cellDropId(shiftInstanceId: string) {
+  return `cell::${shiftInstanceId}`
+}
+function swapDropId(shiftInstanceId: string, staffId: string) {
+  return `swap::${shiftInstanceId}::${staffId}`
 }
 
-function cellId(shiftInstanceId: string, staffId: string) {
-  return `cell::${shiftInstanceId}::${staffId}`
-}
-
-function parsePillId(id: string): { shiftInstanceId: string; staffId: string } | null {
+function parseChipId(id: string): { shiftInstanceId: string; staffId: string } | null {
   const parts = id.split('::')
-  if (parts[0] !== 'pill' || parts.length !== 3) return null
+  if (parts[0] !== 'chip' || parts.length !== 3) return null
   return { shiftInstanceId: parts[1], staffId: parts[2] }
 }
 
-function parseCellId(id: string): { shiftInstanceId: string; staffId: string } | null {
-  const parts = id.split('::')
-  if (parts[0] !== 'cell' || parts.length !== 3) return null
-  return { shiftInstanceId: parts[1], staffId: parts[2] }
-}
+// ── StaffChip ────────────────────────────────────────────────────────────────
 
-// ── ShiftPill ────────────────────────────────────────────────────────────────
-
-interface ShiftPillProps {
+interface StaffChipProps {
   shiftInstanceId: string
   staffId: string
-  shiftType: ShiftType
-  areaName: string
-  startTime: string
-  endTime: string
+  fullName: string
   violations: Violation[]
+  isHighlighted: boolean
+  onRemove: () => void
   isDragOverlay?: boolean
 }
 
-function ShiftPill({ shiftInstanceId, staffId, shiftType, areaName, startTime, endTime, violations, isDragOverlay }: ShiftPillProps) {
-  const id = pillId(shiftInstanceId, staffId)
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id })
+function StaffChip({
+  shiftInstanceId,
+  staffId,
+  fullName,
+  violations,
+  isHighlighted,
+  onRemove,
+  isDragOverlay,
+}: StaffChipProps) {
+  const dragId = chipDragId(shiftInstanceId, staffId)
+  const drag = useDraggable({ id: dragId, disabled: isDragOverlay })
+  const drop = useDroppable({ id: swapDropId(shiftInstanceId, staffId), disabled: isDragOverlay })
+
+  const setRef = (el: HTMLElement | null) => {
+    drag.setNodeRef(el)
+    drop.setNodeRef(el)
+  }
 
   const hasViolations = violations.length > 0
 
-  const pill = (
+  const chip = (
     <span
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
+      ref={setRef}
+      {...drag.listeners}
+      {...drag.attributes}
       className={cn(
-        'inline-flex items-center gap-0.5 rounded border px-1 py-px font-medium leading-tight cursor-grab select-none',
-        SHIFT_COLOURS[shiftType],
-        isDragging && !isDragOverlay && 'opacity-30',
+        'group/chip relative inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-xs font-medium leading-tight cursor-grab select-none max-w-full',
+        'bg-white text-gray-700 border-gray-200 hover:border-gray-300',
+        hasViolations && 'border-amber-300 bg-amber-50 text-amber-900',
+        isHighlighted && 'ring-2 ring-amber-400',
+        drag.isDragging && !isDragOverlay && 'opacity-30',
+        drop.isOver && !isDragOverlay && 'ring-2 ring-blue-400',
         isDragOverlay && 'shadow-lg cursor-grabbing rotate-1',
       )}
-      title={hasViolations ? undefined : `${areaName} ${shiftType} – ${startTime.slice(0, 5)}–${endTime.slice(0, 5)}`}
     >
-      {SHIFT_LABEL[shiftType]}
-      {hasViolations && <AlertTriangle className="h-2.5 w-2.5 text-amber-500 shrink-0" />}
+      {hasViolations && <AlertTriangle className="h-3 w-3 shrink-0 text-amber-500" />}
+      <span className="truncate">{fullName}</span>
+      {!isDragOverlay && (
+        <button
+          type="button"
+          aria-label={`Remove ${fullName}`}
+          onPointerDown={e => e.stopPropagation()}
+          onClick={e => {
+            e.stopPropagation()
+            onRemove()
+          }}
+          className="ml-0.5 inline-flex items-center justify-center rounded-sm opacity-0 group-hover/chip:opacity-100 hover:bg-gray-200 transition-opacity"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
     </span>
   )
 
-  if (!hasViolations) return pill
+  if (!hasViolations || isDragOverlay) return chip
 
   return (
     <Tooltip>
-      <TooltipTrigger render={pill} />
+      <TooltipTrigger render={chip} />
       <TooltipContent side="top" className="max-w-56 whitespace-normal">
         <div className="space-y-1">
-          <div className="font-medium">{areaName} {SHIFT_LABEL[shiftType]} – {startTime.slice(0, 5)}–{endTime.slice(0, 5)}</div>
+          <div className="font-medium">{fullName}</div>
           {violations.map((v, i) => (
             <div key={i} className="flex items-start gap-1 opacity-90">
               <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0 text-amber-300" />
@@ -156,27 +178,26 @@ function ShiftPill({ shiftInstanceId, staffId, shiftType, areaName, startTime, e
   )
 }
 
-// ── DropCell ─────────────────────────────────────────────────────────────────
+// ── CellDropZone ─────────────────────────────────────────────────────────────
+// The cell's "background" drop target — accepts a chip dropped on empty space.
 
-interface DropCellProps {
+function CellDropZone({
+  shiftInstanceId,
+  children,
+  className,
+}: {
   shiftInstanceId: string
-  staffId: string
-  isOccupied: boolean
   children: React.ReactNode
-}
-
-function DropCell({ shiftInstanceId, staffId, isOccupied, isHighlighted, children }: DropCellProps & { isHighlighted?: boolean }) {
-  const id = cellId(shiftInstanceId, staffId)
-  const { setNodeRef, isOver } = useDroppable({ id })
-
+  className?: string
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: cellDropId(shiftInstanceId) })
   return (
     <div
       ref={setNodeRef}
       className={cn(
-        'min-h-[20px] rounded transition-colors',
-        isOver && !isOccupied && 'bg-blue-50 ring-1 ring-blue-300',
-        isOver && isOccupied && 'bg-amber-50 ring-1 ring-amber-300',
-        isHighlighted && 'ring-2 ring-amber-400 bg-amber-50',
+        'flex flex-col gap-0.5 min-h-[28px] rounded transition-colors',
+        isOver && 'bg-blue-50 ring-1 ring-blue-300',
+        className,
       )}
     >
       {children}
@@ -191,7 +212,6 @@ interface ApiArea {
   name: string
   min_staff_per_shift: number
 }
-
 interface ApiStaff {
   id: string
   full_name: string
@@ -202,7 +222,6 @@ interface ApiStaff {
   phone: string | null
   created_at: string
 }
-
 interface ApiShift {
   id: string
   area_id: string
@@ -211,16 +230,6 @@ interface ApiShift {
   start_time: string
   end_time: string
   status: string
-}
-
-interface ApiGridData {
-  block: { id: string; start_date: string; end_date: string }
-  areas: ApiArea[]
-  staff: ApiStaff[]
-  shifts: ApiShift[]
-  assignments: RichAssignment[]
-  leaveRequests: unknown[]
-  availability: unknown[]
 }
 
 // ── RosterGrid ───────────────────────────────────────────────────────────────
@@ -234,15 +243,21 @@ interface Props {
 export default function RosterGrid({ blockId, startDate, endDate }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [weekOffset, setWeekOffset] = useState(0)
-  const [activeDrag, setActiveDrag] = useState<{ shiftInstanceId: string; staffId: string; shiftType: ShiftType; areaName: string; startTime: string; endTime: string } | null>(null)
+  const [activeDrag, setActiveDrag] = useState<{
+    shiftInstanceId: string
+    staffId: string
+    fullName: string
+  } | null>(null)
 
-  // Pending DB writes: map of `${shiftInstanceId}::${fromStaffId}::${toStaffId}` → status
+  // Pending DB writes — keyed by an op-specific string.
   const pendingWrites = useRef<Map<string, 'pending' | 'error'>>(new Map())
   const [, forceUpdate] = useState(0)
 
   const hydrate = useRosterStore(s => s.hydrate)
-  const assign = useRosterStore(s => s.assign)
-  const reassign = useRosterStore(s => s.reassign)
+  const assignAction = useRosterStore(s => s.assign)
+  const unassignAction = useRosterStore(s => s.unassign)
+  const moveAction = useRosterStore(s => s.move)
+  const swapAction = useRosterStore(s => s.swap)
   const assignments = useRosterStore(s => s.assignments)
   const violations = useRosterStore(s => s.violations)
   const storeAreas = useRosterStore(s => s.areas)
@@ -254,7 +269,17 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
   useEffect(() => {
     fetch(`/api/roster/${blockId}/shifts`)
       .then(r => r.json())
-      .then((json: ApiGridData & { error?: string }) => {
+      .then((json: {
+        block: { id: string; start_date: string; end_date: string }
+        areas: unknown
+        staff: unknown
+        shifts: unknown
+        assignments: unknown
+        leaveRequests: unknown
+        availability: unknown
+        staffAreas: unknown
+        error?: string
+      }) => {
         if (json.error) { setError(json.error); return }
         hydrate({
           blockId,
@@ -263,7 +288,8 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
           staff: json.staff as never,
           shifts: json.shifts as never,
           areas: json.areas as never,
-          assignments: json.assignments,
+          staffAreas: json.staffAreas as never,
+          assignments: json.assignments as never,
           leaveRequests: json.leaveRequests as never,
           availability: json.availability as never,
         })
@@ -271,59 +297,70 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
       .catch(() => setError('Failed to load roster data'))
   }, [blockId, hydrate])
 
-  const persistAssign = useCallback(async (shiftInstanceId: string, staffId: string) => {
-    const key = `${shiftInstanceId}::${staffId}`
+  const trackWrite = useCallback(async (key: string, run: () => Promise<Response>) => {
     pendingWrites.current.set(key, 'pending')
     forceUpdate(n => n + 1)
-
-    const res = await fetch(`/api/roster/${blockId}/assignments`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ shiftInstanceId, staffId }),
-    })
-
-    if (!res.ok) {
+    try {
+      const res = await run()
+      if (!res.ok) pendingWrites.current.set(key, 'error')
+      else pendingWrites.current.delete(key)
+    } catch {
       pendingWrites.current.set(key, 'error')
-    } else {
-      pendingWrites.current.delete(key)
     }
     forceUpdate(n => n + 1)
-  }, [blockId])
+  }, [])
 
-  const persistReassign = useCallback(async (shiftInstanceId: string, fromStaffId: string, toStaffId: string) => {
-    const key = `${shiftInstanceId}::${fromStaffId}::${toStaffId}`
-    pendingWrites.current.set(key, 'pending')
-    forceUpdate(n => n + 1)
+  const persistAssign = useCallback((shiftInstanceId: string, staffId: string) => {
+    return trackWrite(`assign::${shiftInstanceId}::${staffId}`, () =>
+      fetch(`/api/roster/${blockId}/assignments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shiftInstanceId, staffId }),
+      }),
+    )
+  }, [blockId, trackWrite])
 
-    const res = await fetch(`/api/roster/${blockId}/assignments`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ shiftInstanceId, fromStaffId, toStaffId }),
-    })
+  const persistUnassign = useCallback((shiftInstanceId: string, staffId: string) => {
+    return trackWrite(`unassign::${shiftInstanceId}::${staffId}`, () =>
+      fetch(`/api/roster/${blockId}/assignments`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shiftInstanceId, staffId }),
+      }),
+    )
+  }, [blockId, trackWrite])
 
-    if (!res.ok) {
-      pendingWrites.current.set(key, 'error')
-    } else {
-      pendingWrites.current.delete(key)
-    }
-    forceUpdate(n => n + 1)
-  }, [blockId])
+  const persistMove = useCallback((staffId: string, fromShiftInstanceId: string, toShiftInstanceId: string) => {
+    return trackWrite(`move::${staffId}::${fromShiftInstanceId}::${toShiftInstanceId}`, () =>
+      fetch(`/api/roster/${blockId}/assignments`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ op: 'move', staffId, fromShiftInstanceId, toShiftInstanceId }),
+      }),
+    )
+  }, [blockId, trackWrite])
+
+  const persistSwap = useCallback((aStaffId: string, aShiftInstanceId: string, bStaffId: string, bShiftInstanceId: string) => {
+    return trackWrite(`swap::${aStaffId}::${aShiftInstanceId}::${bStaffId}::${bShiftInstanceId}`, () =>
+      fetch(`/api/roster/${blockId}/assignments`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ op: 'swap', aStaffId, aShiftInstanceId, bStaffId, bShiftInstanceId }),
+      }),
+    )
+  }, [blockId, trackWrite])
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
   function onDragStart(event: DragStartEvent) {
-    const parsed = parsePillId(String(event.active.id))
+    const parsed = parseChipId(String(event.active.id))
     if (!parsed) return
-    const shift = storeShifts.find(s => s.id === parsed.shiftInstanceId)
-    const area = storeAreas.find(a => a.id === shift?.area_id)
-    if (!shift || !area) return
+    const member = storeStaff.find(s => s.id === parsed.staffId)
+    if (!member) return
     setActiveDrag({
       shiftInstanceId: parsed.shiftInstanceId,
       staffId: parsed.staffId,
-      shiftType: shift.shift_type as ShiftType,
-      areaName: area.name,
-      startTime: shift.start_time,
-      endTime: shift.end_time,
+      fullName: member.full_name,
     })
   }
 
@@ -331,19 +368,36 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
     setActiveDrag(null)
     if (!event.over) return
 
-    const drag = parsePillId(String(event.active.id))
-    const drop = parseCellId(String(event.over.id))
-    if (!drag || !drop) return
+    const drag = parseChipId(String(event.active.id))
+    if (!drag) return
 
-    // Must be same shift instance, different staff
-    if (drag.shiftInstanceId !== drop.shiftInstanceId) return
-    if (drag.staffId === drop.staffId) return
+    const overId = String(event.over.id)
 
-    // Optimistic update in store
-    reassign(drag.shiftInstanceId, drag.staffId, drop.staffId)
+    // Cell-background drop → move
+    if (overId.startsWith('cell::')) {
+      const targetShiftInstanceId = overId.slice('cell::'.length)
+      if (!targetShiftInstanceId || targetShiftInstanceId === drag.shiftInstanceId) return
+      // No-op if staff is already on the target shift
+      if (assignments.some(a => a.shift_instance_id === targetShiftInstanceId && a.staff_id === drag.staffId)) return
+      moveAction(drag.staffId, drag.shiftInstanceId, targetShiftInstanceId)
+      persistMove(drag.staffId, drag.shiftInstanceId, targetShiftInstanceId)
+      return
+    }
 
-    // Persist to DB
-    persistReassign(drag.shiftInstanceId, drag.staffId, drop.staffId)
+    // Chip drop → swap
+    if (overId.startsWith('swap::')) {
+      const parts = overId.split('::')
+      if (parts.length !== 3) return
+      const targetShift = parts[1]
+      const targetStaff = parts[2]
+      // No-op if dropping on self, or onto same staff member's other chip
+      if (targetShift === drag.shiftInstanceId && targetStaff === drag.staffId) return
+      if (targetStaff === drag.staffId) return
+      // No-op if both staff are already on each other's target shifts (cycle)
+      swapAction(drag.staffId, drag.shiftInstanceId, targetStaff, targetShift)
+      persistSwap(drag.staffId, drag.shiftInstanceId, targetStaff, targetShift)
+      return
+    }
   }
 
   if (error) return (
@@ -357,22 +411,22 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
   const totalWeeks = Math.ceil(allDates.length / 7)
   const visibleDates = allDates.slice(weekOffset * 7, weekOffset * 7 + 7)
 
-  // Build lookup: shiftsByAreaDateType[areaId][date][shiftType]
-  const shiftsByAreaDateType: Record<string, Record<string, Record<string, ApiShift>>> = {}
+  // Lookup: shiftByAreaDateType[areaId][date][shiftType]
+  const shiftByAreaDateType: Record<string, Record<string, Partial<Record<ShiftType, ApiShift>>>> = {}
   for (const s of storeShifts) {
-    if (!shiftsByAreaDateType[s.area_id]) shiftsByAreaDateType[s.area_id] = {}
-    if (!shiftsByAreaDateType[s.area_id][s.shift_date]) shiftsByAreaDateType[s.area_id][s.shift_date] = {}
-    shiftsByAreaDateType[s.area_id][s.shift_date][s.shift_type] = s as ApiShift
+    if (!shiftByAreaDateType[s.area_id]) shiftByAreaDateType[s.area_id] = {}
+    if (!shiftByAreaDateType[s.area_id][s.shift_date]) shiftByAreaDateType[s.area_id][s.shift_date] = {}
+    shiftByAreaDateType[s.area_id][s.shift_date][s.shift_type as ShiftType] = s as ApiShift
   }
 
-  // Build lookup: assignmentsByShift[shiftInstanceId] = RichAssignment[]
-  const assignmentsByShift: Record<string, RichAssignment[]> = {}
+  // Lookup: assignmentsByShift[shiftInstanceId] = staff_id[]
+  const assignmentsByShift: Record<string, string[]> = {}
   for (const a of assignments) {
     if (!assignmentsByShift[a.shift_instance_id]) assignmentsByShift[a.shift_instance_id] = []
-    assignmentsByShift[a.shift_instance_id].push(a)
+    assignmentsByShift[a.shift_instance_id].push(a.staff_id)
   }
 
-  // Build lookup: violationsByStaffAndShift[staffId][shiftInstanceId]
+  // Lookup: violationsByStaffAndShift[staffId][shiftInstanceId]
   const violationsByStaffAndShift: Record<string, Record<string, Violation[]>> = {}
   for (const v of violations) {
     if (!v.staffId || !v.shiftInstanceId) continue
@@ -381,37 +435,16 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
     violationsByStaffAndShift[v.staffId][v.shiftInstanceId].push(v)
   }
 
-  // Group staff by their assigned areas across the full block
-  const staffAreaIds: Record<string, Set<string>> = {}
-  for (const a of assignments) {
-    const shift = storeShifts.find(s => s.id === a.shift_instance_id)
-    if (!shift) continue
-    if (!staffAreaIds[a.staff_id]) staffAreaIds[a.staff_id] = new Set()
-    staffAreaIds[a.staff_id].add(shift.area_id)
-  }
-  const staffByArea: Record<string, typeof storeStaff> = {}
-  for (const s of storeStaff) {
-    const areaIds = staffAreaIds[s.id]
-    if (areaIds && areaIds.size > 0) {
-      for (const areaId of areaIds) {
-        if (!staffByArea[areaId]) staffByArea[areaId] = []
-        staffByArea[areaId].push(s)
-      }
-    } else if (storeAreas.length > 0) {
-      const firstAreaId = storeAreas[0].id
-      if (!staffByArea[firstAreaId]) staffByArea[firstAreaId] = []
-      staffByArea[firstAreaId].push(s)
-    }
-  }
+  const staffById = new Map(storeStaff.map(s => [s.id, s]))
 
-  // Coverage for visible dates
+  // Coverage for visible dates (per area, summed across all shift types)
   const coverage: Record<string, { filled: number; required: number }> = {}
   for (const area of storeAreas) {
     for (const date of visibleDates) {
       const key = `${area.id}:${date}`
       let filled = 0; let required = 0
-      for (const shiftType of SHIFT_ORDER) {
-        const shift = shiftsByAreaDateType[area.id]?.[date]?.[shiftType]
+      for (const shiftType of SECTION_ORDER) {
+        const shift = shiftByAreaDateType[area.id]?.[date]?.[shiftType]
         if (!shift) continue
         required += (area as ApiArea).min_staff_per_shift
         filled += (assignmentsByShift[shift.id] ?? []).length
@@ -420,7 +453,6 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
     }
   }
 
-  // Pending write indicator
   const hasPendingWrites = [...pendingWrites.current.values()].some(s => s === 'pending')
   const hasWriteErrors = [...pendingWrites.current.values()].some(s => s === 'error')
 
@@ -453,40 +485,27 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
 
           <div className="flex-1" />
 
-          {/* Save status */}
           {hasPendingWrites && <span className="text-xs text-gray-400">Saving…</span>}
           {hasWriteErrors && <span className="text-xs text-red-500">Save failed — reload to retry</span>}
 
-          {/* Violations bell */}
           <ViolationsPopover
             onJumpToWeek={setWeekOffset}
             blockStart={startDate}
           />
-
-          {/* Shift legend */}
-          <div className="flex items-center gap-3 text-xs text-gray-500">
-            {SHIFT_ORDER.filter(t => t !== 'ado').map(t => (
-              <span key={t} className={cn('px-1.5 py-0.5 rounded border font-medium', SHIFT_COLOURS[t])}>
-                {SHIFT_LABEL[t]}
-              </span>
-            ))}
-            <span className={cn('px-1.5 py-0.5 rounded border font-medium', SHIFT_COLOURS.ado)}>ADO</span>
-            <span className="px-1.5 py-0.5 rounded border border-dashed border-gray-300 text-gray-300">Open</span>
-          </div>
         </div>
 
         {/* Scrollable grid */}
         <div className="flex-1 overflow-auto">
-          <table className="border-collapse text-xs w-full" style={{ tableLayout: 'fixed', minWidth: `${140 + visibleDates.length * 88}px` }}>
+          <table className="border-collapse text-xs w-full" style={{ tableLayout: 'fixed', minWidth: `${140 + visibleDates.length * 110}px` }}>
             <colgroup>
               <col style={{ width: 140 }} />
-              {visibleDates.map(d => <col key={d} style={{ width: 88 }} />)}
+              {visibleDates.map(d => <col key={d} style={{ width: 110 }} />)}
             </colgroup>
 
-            <thead className="sticky top-0 z-20 bg-white">
+            <thead className="sticky top-0 z-30 bg-white">
               <tr>
-                <th className="sticky left-0 z-30 bg-gray-50 border-b border-r border-gray-200 px-3 py-2 text-left text-gray-400 font-normal">
-                  Staff
+                <th className="sticky left-0 z-40 bg-gray-50 border-b border-r border-gray-200 px-3 py-2 text-left text-gray-400 font-normal">
+                  Area
                 </th>
                 {visibleDates.map(date => (
                   <th
@@ -504,111 +523,96 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
             </thead>
 
             <tbody>
-              {storeAreas.map(area => {
-                const areaStaff = staffByArea[area.id] ?? []
-                return [
-                  <tr key={`area-${area.id}`} className="bg-gray-50">
-                    <td
-                      colSpan={visibleDates.length + 1}
-                      className="sticky left-0 border-b border-t border-gray-200 px-3 py-1 font-semibold text-gray-600 bg-gray-50"
-                    >
+              {SECTION_ORDER.flatMap(shiftType => [
+                <tr key={`section-${shiftType}`}>
+                  <td
+                    colSpan={visibleDates.length + 1}
+                    className={cn(
+                      'border-b border-t border-gray-200 px-3 py-1 text-[11px] font-bold uppercase tracking-wider',
+                      SECTION_TINT[shiftType],
+                    )}
+                    style={{ position: 'sticky', top: SECTION_STICKY_TOP, zIndex: 20 }}
+                  >
+                    {SHIFT_LABEL[shiftType]}
+                  </td>
+                </tr>,
+                ...storeAreas.map(area => (
+                  <tr key={`${shiftType}-${area.id}`} className="hover:bg-gray-50/40">
+                    <td className="sticky left-0 z-10 border-b border-r border-gray-100 bg-white px-3 py-1.5 truncate text-gray-700">
                       {area.name}
                     </td>
-                  </tr>,
 
-                  ...areaStaff.map(member => (
-                    <tr key={`${area.id}-${member.id}`} className="hover:bg-gray-50/50">
-                      <td className="sticky left-0 z-10 border-b border-r border-gray-100 bg-white px-3 py-1 truncate text-gray-700 hover:bg-gray-50">
-                        {member.full_name}
-                      </td>
-
-                      {visibleDates.map(date => {
-                        const dayShifts = shiftsByAreaDateType[area.id]?.[date] ?? {}
-                        return (
-                          <td
-                            key={date}
-                            className={cn(
-                              'border-b border-r border-gray-100 px-0.5 py-0.5 align-top',
-                              isWeekend(date) && 'bg-gray-50/60'
-                            )}
-                          >
-                            <div className="flex flex-col gap-0.5">
-                              {SHIFT_ORDER.map(shiftType => {
-                                const shift = dayShifts[shiftType]
-                                if (!shift) return null
-                                const isAssigned = (assignmentsByShift[shift.id] ?? []).some(a => a.staff_id === member.id)
-                                const pillViolations = violationsByStaffAndShift[member.id]?.[shift.id] ?? []
-
-                                return (
-                                  <DropCell
-                                    key={shiftType}
-                                    shiftInstanceId={shift.id}
-                                    staffId={member.id}
-                                    isOccupied={isAssigned}
-                                    isHighlighted={highlightedCell?.shiftInstanceId === shift.id && highlightedCell?.staffId === member.id}
-                                  >
-                                    {isAssigned && (
-                                      <ShiftPill
-                                        shiftInstanceId={shift.id}
-                                        staffId={member.id}
-                                        shiftType={shiftType}
-                                        areaName={area.name}
-                                        startTime={shift.start_time}
-                                        endTime={shift.end_time}
-                                        violations={pillViolations}
-                                      />
-                                    )}
-                                  </DropCell>
-                                )
-                              })}
-                            </div>
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  )),
-
-                  <tr key={`open-${area.id}`} className="border-b border-gray-100">
-                    <td className="sticky left-0 z-10 border-r border-gray-100 bg-white px-3 py-1 text-gray-400 italic">
-                      Open slots
-                    </td>
                     {visibleDates.map(date => {
-                      const dayShifts = shiftsByAreaDateType[area.id]?.[date] ?? {}
-                      const openShifts = SHIFT_ORDER.filter(shiftType => {
-                        const shift = dayShifts[shiftType]
-                        if (!shift) return false
-                        const assigned = (assignmentsByShift[shift.id] ?? []).length
-                        return assigned < (area as ApiArea).min_staff_per_shift
-                      })
+                      const shift = shiftByAreaDateType[area.id]?.[date]?.[shiftType]
+                      const assignedIds = shift ? (assignmentsByShift[shift.id] ?? []) : []
+                      const required = (area as ApiArea).min_staff_per_shift
+                      const filled = assignedIds.length
+
                       return (
                         <td
                           key={date}
-                          className={cn('border-r border-gray-100 px-0.5 py-0.5 align-top', isWeekend(date) && 'bg-gray-50/60')}
+                          className={cn(
+                            'border-b border-r border-gray-100 p-1 align-top group',
+                            isWeekend(date) && 'bg-gray-50/60',
+                          )}
                         >
-                          <div className="flex flex-col gap-0.5">
-                            {openShifts.map(shiftType => {
-                              const shift = dayShifts[shiftType]!
-                              return (
-                                <AssignPopover
-                                  key={shiftType}
-                                  shiftInstanceId={shift.id}
-                                  shiftType={shiftType}
-                                  shiftDate={date}
-                                  areaName={area.name}
-                                  onAssign={async (staffId) => {
-                                    assign(shift.id, staffId)
-                                    await persistAssign(shift.id, staffId)
-                                  }}
-                                />
-                              )
-                            })}
-                          </div>
+                          {!shift ? (
+                            <div className="min-h-[28px] rounded bg-[repeating-linear-gradient(45deg,transparent,transparent_4px,rgb(243_244_246)_4px,rgb(243_244_246)_5px)]" />
+                          ) : (
+                            <CellDropZone shiftInstanceId={shift.id}>
+                              {assignedIds.map(staffId => {
+                                const member = staffById.get(staffId)
+                                if (!member) return null
+                                const isHighlighted =
+                                  highlightedCell?.shiftInstanceId === shift.id &&
+                                  highlightedCell?.staffId === staffId
+                                return (
+                                  <StaffChip
+                                    key={staffId}
+                                    shiftInstanceId={shift.id}
+                                    staffId={staffId}
+                                    fullName={member.full_name}
+                                    violations={violationsByStaffAndShift[staffId]?.[shift.id] ?? []}
+                                    isHighlighted={!!isHighlighted}
+                                    onRemove={() => {
+                                      unassignAction(shift.id, staffId)
+                                      persistUnassign(shift.id, staffId)
+                                    }}
+                                  />
+                                )
+                              })}
+
+                              <AssignPopover
+                                shiftInstanceId={shift.id}
+                                shiftType={shiftType}
+                                shiftDate={date}
+                                areaId={area.id}
+                                areaName={area.name}
+                                onAssign={async (staffId) => {
+                                  assignAction(shift.id, staffId)
+                                  await persistAssign(shift.id, staffId)
+                                }}
+                                trigger={
+                                  <button
+                                    type="button"
+                                    className="flex items-center justify-center gap-1 rounded border border-dashed border-gray-300 px-1 py-0.5 text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-colors"
+                                    title={`Assign staff to ${area.name} ${SHIFT_LABEL[shiftType]} on ${shortDate(date)}`}
+                                  >
+                                    <Plus className="h-3 w-3" />
+                                    <span>Add</span>
+                                  </button>
+                                }
+                              />
+
+                              <CapacityIndicator filled={filled} required={required} />
+                            </CellDropZone>
+                          )}
                         </td>
                       )
                     })}
-                  </tr>,
-                ]
-              })}
+                  </tr>
+                )),
+              ])}
             </tbody>
           </table>
         </div>
@@ -634,22 +638,44 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
         </div>
       </div>
 
-      {/* Drag overlay — ghost pill while dragging */}
+      {/* Drag overlay */}
       <DragOverlay>
         {activeDrag && (
-          <ShiftPill
+          <StaffChip
             shiftInstanceId={activeDrag.shiftInstanceId}
             staffId={activeDrag.staffId}
-            shiftType={activeDrag.shiftType}
-            areaName={activeDrag.areaName}
-            startTime={activeDrag.startTime}
-            endTime={activeDrag.endTime}
+            fullName={activeDrag.fullName}
             violations={[]}
+            isHighlighted={false}
+            onRemove={() => {}}
             isDragOverlay
           />
         )}
       </DragOverlay>
     </DndContext>
     </TooltipProvider>
+  )
+}
+
+// ── CapacityIndicator ────────────────────────────────────────────────────────
+
+function CapacityIndicator({ filled, required }: { filled: number; required: number }) {
+  if (required === 0) return null
+  if (filled === required) {
+    return <div className="text-[10px] text-gray-400 leading-none mt-0.5">{filled}/{required}</div>
+  }
+  if (filled > required) {
+    return (
+      <div className="flex items-center gap-0.5 text-[10px] text-red-500 leading-none mt-0.5">
+        <span>{filled}/{required}</span>
+        <AlertTriangle className="h-2.5 w-2.5" />
+      </div>
+    )
+  }
+  return (
+    <div className="flex items-center gap-0.5 text-[10px] text-amber-600 leading-none mt-0.5">
+      <span>{filled}/{required}</span>
+      <AlertTriangle className="h-2.5 w-2.5" />
+    </div>
   )
 }

@@ -13,6 +13,7 @@ export async function GET(
     { data: shifts, error: shiftsErr },
     { data: staff, error: staffErr },
     { data: areas, error: areasErr },
+    { data: staffAreas, error: staffAreasErr },
   ] = await Promise.all([
     supabase
       .from('roster_blocks')
@@ -34,12 +35,16 @@ export async function GET(
       .from('areas')
       .select('id, name, min_staff_per_shift')
       .order('name'),
+    supabase
+      .from('staff_areas')
+      .select('staff_id, area_id, is_primary'),
   ])
 
   if (blockErr) return NextResponse.json({ error: blockErr.message }, { status: 404 })
   if (shiftsErr) return NextResponse.json({ error: shiftsErr.message }, { status: 500 })
   if (staffErr) return NextResponse.json({ error: staffErr.message }, { status: 500 })
   if (areasErr) return NextResponse.json({ error: areasErr.message }, { status: 500 })
+  if (staffAreasErr) return NextResponse.json({ error: staffAreasErr.message }, { status: 500 })
 
   const shiftIds = (shifts ?? []).map(s => s.id)
   const staffIds = (staff ?? []).map(s => s.id)
@@ -93,5 +98,6 @@ export async function GET(
     assignments: richAssignments,
     leaveRequests: leaveRequests ?? [],
     availability: availability ?? [],
+    staffAreas: staffAreas ?? [],
   })
 }
