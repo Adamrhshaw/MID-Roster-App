@@ -36,6 +36,8 @@ See [TRACKER.md](TRACKER.md) for what is built vs what is outstanding. Always up
   ```
 - `DialogTrigger`, `PopoverTrigger`, `SheetTrigger` all use the same `render` prop pattern
 - `Select.onValueChange` returns `string | null` — always null-coalesce
+- **`nativeButton` prop on Trigger components**: defaults to `true` and warns if the rendered element isn't a `<button>`. When the trigger is a `<span>`/`<div>` (e.g. a chip that can't legally contain a child `<button>`), pass `nativeButton={false}` so base-ui wires its own keyboard/role handling
+- Triggers can be **nested via render props**: `<PopoverTrigger render={<TooltipTrigger render={<span/>} />} />` lets the same DOM node carry both popover (click) and tooltip (hover) handlers — base-ui composes refs/handlers down through both layers
 
 ### Supabase API Keys
 - The new `sb_publishable_...` / `sb_secret_...` key format is **not yet supported** by supabase-js
@@ -92,7 +94,12 @@ src/
   app/
     (manager)/          ← protected; requires Supabase Auth session
       staff/            ← ✅ fully implemented
-      roster/[blockId]/ ← ✅ read-only grid
+      roster/[blockId]/ ← ✅ Core-Schedule-style grid: AM/PM/NT sticky sections,
+      │                       area rows, staff chips. Hover-+ adds (filtered to
+      │                       certified staff); click chip replaces; × removes;
+      │                       DnD chip→empty cell = move, chip→chip = swap.
+      │                       Optimistic updates via Zustand `rosterStore`,
+      │                       persisted via /api/roster/[blockId]/assignments.
       leave/            ← ✅ inbox with approve/reject
       swaps/            ← ✅ inbox with approve/reject
       settings/         ← ✅ areas + templates CRUD
