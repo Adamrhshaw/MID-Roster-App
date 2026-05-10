@@ -229,11 +229,15 @@ export const useRosterStore = create<RosterState>((set, get) => ({
     if (!aShift || !bShift) return
 
     const now = new Date().toISOString()
-    // Remove both originals, then add the swapped pair.
+    // Strip the two originals AND any pre-existing rows at the destination
+    // pairs — otherwise a swap that lands a staff member on a shift they
+    // were already on produces a duplicate (shift, staff) row.
     const filtered = state.assignments.filter(
       a =>
         !(a.shift_instance_id === aShiftInstanceId && a.staff_id === aStaffId) &&
-        !(a.shift_instance_id === bShiftInstanceId && a.staff_id === bStaffId),
+        !(a.shift_instance_id === bShiftInstanceId && a.staff_id === bStaffId) &&
+        !(a.shift_instance_id === bShiftInstanceId && a.staff_id === aStaffId) &&
+        !(a.shift_instance_id === aShiftInstanceId && a.staff_id === bStaffId),
     )
 
     set({
