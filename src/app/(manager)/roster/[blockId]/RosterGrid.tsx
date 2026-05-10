@@ -597,7 +597,7 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
                                 trigger={
                                   <button
                                     type="button"
-                                    className="flex flex-1 min-h-[20px] items-center justify-center gap-1 rounded border border-dashed border-gray-300 px-1 py-0.5 text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 hover:border-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+                                    className="flex flex-1 min-h-[20px] items-center justify-center gap-1 rounded border border-dashed border-gray-300 px-1 py-0.5 text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"
                                     title={`Assign staff to ${area.name} ${SHIFT_LABEL[shiftType]} on ${shortDate(date)}`}
                                   >
                                     <Plus className="h-3 w-3" />
