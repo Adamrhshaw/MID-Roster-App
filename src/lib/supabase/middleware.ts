@@ -4,6 +4,8 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
+  if (process.env.DEV_BYPASS_AUTH === 'true') return supabaseResponse
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -25,8 +27,6 @@ export async function updateSession(request: NextRequest) {
 
   // Refresh session — do not remove
   const { data: { user } } = await supabase.auth.getUser()
-
-  if (process.env.DEV_BYPASS_AUTH === 'true') return supabaseResponse
 
   // Protect manager routes
   const isManagerRoute = request.nextUrl.pathname.startsWith('/roster') ||

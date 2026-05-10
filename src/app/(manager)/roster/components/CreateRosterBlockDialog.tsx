@@ -66,6 +66,8 @@ export default function CreateRosterBlockDialog({
       setOpen(false)
       router.push(`/roster/${data.id}`)
       router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Network error — check the server is running')
     } finally {
       setSubmitting(false)
     }
