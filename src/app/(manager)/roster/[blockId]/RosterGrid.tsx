@@ -130,7 +130,7 @@ function StaffChip({
       {...drag.listeners}
       {...drag.attributes}
       className={cn(
-        'group/chip relative inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-xs font-medium leading-tight cursor-grab select-none max-w-full',
+        'group/chip relative flex w-full items-center gap-1 rounded border px-1.5 py-0.5 text-xs font-medium leading-tight cursor-grab select-none',
         'bg-white text-gray-700 border-gray-200 hover:border-gray-300',
         hasViolations && 'border-amber-300 bg-amber-50 text-amber-900',
         isHighlighted && 'ring-2 ring-amber-400',
@@ -140,7 +140,7 @@ function StaffChip({
       )}
     >
       {hasViolations && <AlertTriangle className="h-3 w-3 shrink-0 text-amber-500" />}
-      <span className="truncate">{fullName}</span>
+      <span className="truncate flex-1 min-w-0">{fullName}</span>
       {!isDragOverlay && (
         <button
           type="button"
@@ -150,7 +150,7 @@ function StaffChip({
             e.stopPropagation()
             onRemove()
           }}
-          className="ml-0.5 inline-flex items-center justify-center rounded-sm opacity-0 group-hover/chip:opacity-100 hover:bg-gray-200 transition-opacity"
+          className="ml-auto shrink-0 inline-flex items-center justify-center rounded-sm opacity-0 group-hover/chip:opacity-100 hover:bg-gray-200 transition-opacity"
         >
           <X className="h-3 w-3" />
         </button>
