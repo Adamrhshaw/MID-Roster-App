@@ -44,7 +44,7 @@
 | Roster index → redirect to latest block | ✅ |
 | Roster block page shell | ✅ |
 | Create roster block | ✅ |
-| Roster grid — Core-Schedule-style (AM/PM/NT sections, area rows, staff chips) | ✅ |
+| Roster grid — Core-Schedule-style (NT/AM/PM sections, area rows, staff chips) | ✅ |
 | Drag-and-drop: chip → empty cell = move; chip → chip = swap (cross-section allowed) | ✅ |
 | Two-tier rule validation on drag | ✅ |
 | Hover-plus → assign popover, filtered to staff certified for the area | ✅ |
@@ -78,7 +78,7 @@
 | Item | Status |
 |------|--------|
 | Type definitions (`RuleContext`, `Violation`, `Rule`) | ✅ |
-| `minimumRestPeriodRule` (10h between shifts) | ✅ |
+| `minimumRestPeriodRule` (10h between shifts; handles midnight-crossing shifts) | ✅ |
 | `maxWeeklyHoursRule` (fte × 35h) | ✅ |
 | `leaveConflictRule` | ✅ |
 | `certificationRequiredRule` | ✅ |
