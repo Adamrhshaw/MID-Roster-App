@@ -39,7 +39,8 @@ export const maxWeeklyHoursRule: Rule = (ctx) => {
       violations.push({
         rule: 'maxWeeklyHours',
         severity: 'warning',
-        message: `Week ${week}: ${hours.toFixed(1)}h rostered exceeds target of ${targetHours}h (FTE ${ctx.staff.fte_target}).`,
+        name: 'Over FTE',
+        message: `${hours.toFixed(1)} / ${targetHours}h`,
         staffId: ctx.staff.id,
       })
     }

@@ -51,7 +51,7 @@ export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, a
   for (const v of violations) {
     if (v.shiftInstanceId === shiftInstanceId && v.staffId) {
       if (!violationsByStaff.has(v.staffId)) violationsByStaff.set(v.staffId, [])
-      violationsByStaff.get(v.staffId)!.push(v.message)
+      violationsByStaff.get(v.staffId)!.push(`${v.name}: ${v.message}`)
     }
   }
 

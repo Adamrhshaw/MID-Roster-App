@@ -1,4 +1,5 @@
 import type { Rule, Violation } from './types'
+import { fmtDate } from './dateFormat'
 
 export const leaveConflictRule: Rule = (ctx) => {
   const violations: Violation[] = []
@@ -14,7 +15,8 @@ export const leaveConflictRule: Rule = (ctx) => {
         violations.push({
           rule: 'leaveConflict',
           severity: 'warning',
-          message: `${ctx.staff.full_name} is rostered on ${shiftDate} but has approved ${leave.leave_type} leave (${leave.start_date}–${leave.end_date}).`,
+          name: 'Leave conflict',
+          message: `${leave.leave_type.replace('_', ' ')} · ${fmtDate(shiftDate)}`,
           staffId: ctx.staff.id,
           shiftInstanceId: assignment.shift_instance.id,
         })

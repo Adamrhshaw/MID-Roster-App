@@ -4,6 +4,7 @@ export type ViolationSeverity = 'warning' | 'info'
 
 export interface Violation {
   rule: string
+  name: string
   severity: ViolationSeverity
   message: string
   staffId: string

@@ -1,4 +1,5 @@
 import type { Rule, Violation } from './types'
+import { fmtDate } from './dateFormat'
 
 // Staff areas represent the modalities a staff member is certified for.
 // Flag if a staff member is assigned to a shift in an area not in their staff_areas list.
@@ -15,8 +16,9 @@ export const certificationRequiredRule: Rule = (ctx) => {
       const areaName = si.area?.name ?? si.area_id
       violations.push({
         rule: 'certificationRequired',
+        name: 'Uncertified',
         severity: 'warning',
-        message: `${ctx.staff.full_name} is not certified for ${areaName} but is rostered there on ${si.shift_date}.`,
+        message: `${areaName} · ${fmtDate(si.shift_date)}`,
         staffId: ctx.staff.id,
         shiftInstanceId: si.id,
       })

@@ -1,5 +1,8 @@
 import type { RuleContext, Violation } from './types'
 import type { Area } from '@/types/database'
+import { fmtDate } from './dateFormat'
+
+const SHIFT_LABEL: Record<string, string> = { morning: 'AM', afternoon: 'PM', night: 'NT', ado: 'ADO' }
 
 // Coverage is a block-level rule — not per-staff. Call once with any ctx that has allAssignments.
 export function areaCoverageRule(
@@ -26,8 +29,9 @@ export function areaCoverageRule(
     if (count < area.min_staff_per_shift) {
       violations.push({
         rule: 'areaCoverage',
+        name: 'Understaffed',
         severity: 'warning',
-        message: `${area.name} ${si.shift_type} shift on ${si.shift_date} has ${count}/${area.min_staff_per_shift} required staff.`,
+        message: `${area.name} ${SHIFT_LABEL[si.shift_type] ?? si.shift_type} · ${count}/${area.min_staff_per_shift} staff · ${fmtDate(si.shift_date)}`,
         staffId: '', // block-level — no single staff responsible
         shiftInstanceId: si.id,
       })

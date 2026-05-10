@@ -1,4 +1,5 @@
 import type { Rule, Violation } from './types'
+import { fmtDate } from './dateFormat'
 
 const MINIMUM_REST_MINUTES = 10 * 60 // 10 hours
 
@@ -38,7 +39,8 @@ export const minimumRestPeriodRule: Rule = (ctx) => {
       violations.push({
         rule: 'minimumRestPeriod',
         severity: 'warning',
-        message: `Only ${Math.round(restMinutes / 60 * 10) / 10}h rest between shifts on ${current.shift_instance.shift_date} and ${next.shift_instance.shift_date} (minimum 10h).`,
+        name: 'Short rest',
+        message: `${Math.round(restMinutes / 60 * 10) / 10}h · ${fmtDate(current.shift_instance.shift_date)}–${fmtDate(next.shift_instance.shift_date)}`,
         staffId: ctx.staff.id,
         shiftInstanceId: next.shift_instance.id,
       })

@@ -1,4 +1,5 @@
 import type { Rule, Violation } from './types'
+import { fmtDate } from './dateFormat'
 
 export const availabilityRule: Rule = (ctx) => {
   const violations: Violation[] = []
@@ -19,8 +20,9 @@ export const availabilityRule: Rule = (ctx) => {
       const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dow]
       violations.push({
         rule: 'availability',
+        name: 'Unavailable',
         severity: 'warning',
-        message: `${ctx.staff.full_name} is marked unavailable on ${dayName}s but is rostered on ${si.shift_date}.`,
+        message: `${dayName}s · ${fmtDate(si.shift_date)}`,
         staffId: ctx.staff.id,
         shiftInstanceId: si.id,
       })

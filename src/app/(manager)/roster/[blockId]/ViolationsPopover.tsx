@@ -44,7 +44,7 @@ export default function ViolationsPopover({ onJumpToWeek, blockStart }: Props) {
       />
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
-          <span className="text-xs font-semibold text-gray-700">Violations ({violations.length})</span>
+          <span className="text-xs font-semibold text-gray-700">Warnings ({violations.length})</span>
         </div>
         <ul className="max-h-72 overflow-y-auto divide-y divide-gray-50">
           {violations.map((v, i) => {
@@ -66,7 +66,9 @@ export default function ViolationsPopover({ onJumpToWeek, blockStart }: Props) {
                       {staffMember && (
                         <div className="text-[10px] font-medium text-gray-500 truncate">{staffMember.full_name}</div>
                       )}
-                      <div className="text-xs text-gray-700">{v.message}</div>
+                      <div className="text-xs text-gray-700">
+                        <span className="font-medium">{v.name}:</span> {v.message}
+                      </div>
                     </div>
                   </div>
                 </button>
