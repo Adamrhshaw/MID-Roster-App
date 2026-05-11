@@ -146,11 +146,12 @@
 
 | Item | Status |
 |------|--------|
-| Redirect to current published block | 🔶 |
-| Published block viewer shell | 🔶 |
-| Fetch published shifts (anon RLS policy in place) | ⬜ |
-| Read-only roster grid + area filter | ⬜ |
-| `?highlight=EMP_ID` — dim other shifts | ⬜ |
+| Redirect to current published block | ✅ |
+| Published block viewer shell — header + label + full grid | ✅ |
+| Anon RLS policy applied (migration 002) | ✅ |
+| Fetch published shifts | ✅ |
+| Read-only roster grid + area filter | ✅ |
+| `?highlight=EMP_ID` — dim other shifts | ✅ |
 
 ---
 

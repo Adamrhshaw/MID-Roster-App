@@ -20,7 +20,8 @@ See [TRACKER.md](TRACKER.md) for what is built vs what is outstanding. Always up
 ## Stack
 
 - **Next.js 16** — App Router. Read `node_modules/next/dist/docs/` before writing any Next.js code.
-- **Supabase** — PostgreSQL + Auth. Migration applied: `supabase/migrations/001_initial_schema.sql`
+- **Supabase** — PostgreSQL + Auth. Migrations applied: `001_initial_schema.sql`, `002_anon_view_policy.sql`.
+  > **Don't trust migration files as truth about live DB state.** 001 was applied before its anon-read RLS policies existed in the file; 002 backfilled them. Verify policies/tables/columns are actually live (`select * from pg_policies where tablename = …`, or the dashboard) before relying on them. Add a new numbered migration rather than editing applied ones.
 - **shadcn/ui v4** — uses `@base-ui/react`, NOT Radix UI. No `asChild` prop on any component.
 - **Tailwind CSS v4**
 - **TypeScript** — strict. Run `node node_modules/typescript/lib/tsc.js --noEmit` to check (the `tsc` binary is broken).
@@ -121,7 +122,10 @@ src/
       swaps/            ← ✅ GET, PATCH (approve/reject + assignment swap)
       portal/session/   ← ✅ Employee ID lookup + cookie
     portal/             ← staff portal (no auth required)
-    view/               ← public read-only roster viewer
+    view/               ← ✅ public read-only roster viewer: anon
+    │                       SSR fetch, NT/AM/PM × area × date grid,
+    │                       ?area= filter, ?highlight=EMP_ID dim
+    │                       (no edits, no DnD, no rosterStore)
   lib/
     supabase/           ← client / server / service helpers
     rules/              ← ✅ 6 rules: minimumRestPeriod, maxWeeklyHours,
