@@ -73,8 +73,9 @@
 | Vitest setup | ✅ | requires `.env.local` with Supabase credentials |
 | Unit tests — rules engine (one per rule) | ✅ | `src/lib/rules/__tests__/` |
 | API integration tests — `/api/leave` and `/api/swaps/[id]` | ✅ | hit real DB; seed + clean per test |
-| Unit tests — generator phases (`src/lib/generator/`) | ⬜ | leaveOverlay / detectGaps / fillGaps / scheduleAdo all untested |
-| Integration test — `POST /api/roster/[blockId]/generate` | ⬜ | end-to-end: seed block + leave, generate, assert assignments + ado_accruals |
+| Playwright e2e — publish/archive + `/view` visibility | ✅ | `e2e/publish-archive.spec.ts`, `e2e/view.spec.ts`; 10 specs; `npm run test:e2e` |
+| Unit tests — generator phases (`src/lib/generator/`) | ✅ | `src/lib/generator/__tests__/`; 24 tests across leaveOverlay / detectGaps / fillGaps / scheduleAdo |
+| Integration test — `POST /api/roster/[blockId]/generate` | ✅ | `src/app/api/__tests__/generate.test.ts`; 3 tests; seeds block + leave + manual assignments, asserts assignments + ado_accruals + generated_at |
 
 ### Rules Engine (`src/lib/rules/`)
 
@@ -174,7 +175,7 @@
 8. ~~Restructure roster grid to Core-Schedule layout (AM/PM/NT × area rows, chip-in-cell)~~ ✅
 9. ~~Roster generation algorithm (phases 1–5)~~ ✅
 10. ~~Publish / archive block — closes the draft → live → archived lifecycle and exposes blocks to `/view`~~ ✅
-11. Generator tests — phase-level unit tests + an end-to-end integration test against a seeded block
+11. ~~Generator tests — phase-level unit tests + an end-to-end integration test against a seeded block~~ ✅
 12. Portal — leave + swap submission
 13. Email notifications (Resend)
 14. Export (CSV / XLSX)

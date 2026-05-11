@@ -91,10 +91,11 @@ npx shadcn@latest add <component>
 
 ## Testing
 
-Run tests with `npm test` (Vitest, requires `.env.local` with Supabase credentials).
+Run tests with `npm test` (Vitest, requires `.env.local` with Supabase credentials). E2E tests run separately with `npm run test:e2e` (Playwright, needs the dev server reachable on localhost:3000).
 
-- **Unit tests** — `src/lib/rules/__tests__/` — pure functions, no DB required
+- **Unit tests** — `src/lib/rules/__tests__/`, `src/lib/generator/__tests__/` — pure functions, no DB required
 - **Integration tests** — `src/app/api/__tests__/` — hit real Supabase; seed + clean up per test
+- **E2E tests** — `e2e/` — Playwright; fixture helpers in `e2e/helpers/db.ts`
 
 Do not mock the Supabase client in integration tests — tests must use the real DB to catch constraint/FK issues.
 
