@@ -124,11 +124,16 @@ export default function StaffForm({ areas, initial, onSubmit, onCancel, submitLa
                   key={a.id}
                   type="button"
                   onClick={() => toggleAreaId(a.id)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
-                    checked
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-                  }`}
+                  className="rounded-full px-3 py-1 text-xs font-medium border transition-colors"
+                  style={checked ? {
+                    background: 'var(--foreground)',
+                    color: 'var(--background)',
+                    borderColor: 'var(--foreground)',
+                  } : {
+                    background: 'transparent',
+                    color: 'var(--text-dim)',
+                    borderColor: 'var(--border)',
+                  }}
                 >
                   {a.name}
                 </button>
@@ -138,7 +143,7 @@ export default function StaffForm({ areas, initial, onSubmit, onCancel, submitLa
         </div>
       )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm" style={{ color: 'var(--red-accent)' }}>{error}</p>}
 
       <div className="flex justify-end gap-2 pt-1">
         <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>

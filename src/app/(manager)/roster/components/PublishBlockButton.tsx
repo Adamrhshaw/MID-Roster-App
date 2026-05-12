@@ -81,15 +81,15 @@ export default function PublishBlockButton({ blockId }: Props) {
               {error ? 'Publish failed' : 'Publish with coverage gaps?'}
             </DialogTitle>
           </DialogHeader>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm" style={{ color: 'var(--red-accent)' }}>{error}</p>}
           {!error && gaps.length > 0 && (
             <div className="flex flex-col gap-2 text-sm">
-              <p className="text-gray-700">
+              <p style={{ color: 'var(--text-dim)' }}>
                 {gaps.length} shift{gaps.length === 1 ? '' : 's'} {gaps.length === 1 ? 'is' : 'are'} still under-filled.
                 You can publish anyway, or cancel to keep filling them.
               </p>
-              <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
-                <ul className="flex max-h-48 flex-col gap-1 overflow-y-auto text-xs text-amber-900">
+              <div className="rounded-md p-3" style={{ border: '1px solid var(--amber-accent-border)', background: 'var(--amber-accent-bg)' }}>
+                <ul className="flex max-h-48 flex-col gap-1 overflow-y-auto text-xs" style={{ color: 'var(--amber-accent)' }}>
                   {gaps.map(g => (
                     <li key={g.shiftInstanceId}>
                       {g.date} · {g.areaName} · {g.shiftType.toUpperCase()} ({g.filled}/{g.required})

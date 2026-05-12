@@ -17,7 +17,7 @@ export default async function ViewIndexPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center text-sm text-gray-400">
+    <div className="flex min-h-screen items-center justify-center text-sm" style={{ color: 'var(--text-mute)' }}>
       No published roster available yet.
     </div>
   )

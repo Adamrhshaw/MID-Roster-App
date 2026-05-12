@@ -32,10 +32,10 @@ const SHIFT_LABEL: Record<ShiftType, string> = {
   ado: 'ADO',
 }
 
-const SECTION_TINT: Record<Exclude<ShiftType, 'ado'>, string> = {
-  morning: 'bg-blue-50/70 text-blue-700',
-  afternoon: 'bg-amber-50/70 text-amber-700',
-  night: 'bg-indigo-50/70 text-indigo-700',
+const SECTION_CLASS: Record<Exclude<ShiftType, 'ado'>, string> = {
+  morning: 'shift-section-am',
+  afternoon: 'shift-section-pm',
+  night: 'shift-section-nt',
 }
 
 const DAY_ABBR = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -141,16 +141,18 @@ function StaffChip({
       {...drag.listeners}
       {...drag.attributes}
       className={cn(
-        'group/chip relative flex w-full items-center gap-1 rounded border px-1.5 py-0.5 text-xs font-medium leading-tight cursor-grab select-none',
-        'bg-white text-gray-700 border-gray-200 hover:border-gray-300',
-        hasViolations && 'border-amber-300 bg-amber-50 text-amber-900',
-        isHighlighted && 'ring-2 ring-amber-400',
+        'group/chip relative flex w-full items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium leading-tight cursor-grab select-none',
         drag.isDragging && !isDragOverlay && 'opacity-30',
-        drop.isOver && !isDragOverlay && 'ring-2 ring-blue-400',
         isDragOverlay && 'shadow-lg cursor-grabbing rotate-1',
       )}
+      style={{
+        background: hasViolations ? 'rgba(245,181,74,0.08)' : 'var(--muted)',
+        border: `1px solid ${hasViolations ? 'var(--amber-accent-border)' : 'var(--border)'}`,
+        color: hasViolations ? 'var(--amber-accent)' : 'var(--foreground)',
+        outline: isHighlighted ? '2px solid var(--amber-accent)' : drop.isOver && !isDragOverlay ? '2px solid var(--blue-accent)' : 'none',
+      }}
     >
-      {hasViolations && <AlertTriangle className="h-3 w-3 shrink-0 text-amber-500" />}
+      {hasViolations && <AlertTriangle className="h-3 w-3 shrink-0" style={{ color: 'var(--amber-accent)' }} />}
       <span className="truncate flex-1 min-w-0">{fullName}</span>
       {!isDragOverlay && (
         <button
@@ -161,7 +163,10 @@ function StaffChip({
             e.stopPropagation()
             onRemove()
           }}
-          className="ml-auto shrink-0 inline-flex items-center justify-center rounded-sm opacity-0 group-hover/chip:opacity-100 hover:bg-gray-200 transition-opacity"
+          className="ml-auto shrink-0 inline-flex items-center justify-center rounded-sm opacity-0 group-hover/chip:opacity-100 transition-opacity"
+          style={{ color: 'var(--text-mute)' }}
+          onMouseEnter={e => { (e.currentTarget.style.background = 'var(--surface-hover)'); (e.currentTarget.style.color = 'var(--foreground)') }}
+          onMouseLeave={e => { (e.currentTarget.style.background = 'transparent'); (e.currentTarget.style.color = 'var(--text-mute)') }}
         >
           <X className="h-3 w-3" />
         </button>
@@ -205,7 +210,7 @@ function StaffChip({
           <div className="font-medium">{fullName}</div>
           {violations.map((v, i) => (
             <div key={i} className="flex items-start gap-1 opacity-90">
-              <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0 text-amber-300" />
+              <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" style={{ color: 'var(--amber-accent)' }} />
               <span>{v.message}</span>
             </div>
           ))}
@@ -233,9 +238,9 @@ function CellDropZone({
       ref={setNodeRef}
       className={cn(
         'flex flex-col gap-0.5 h-full min-h-[28px] rounded transition-colors',
-        isOver && 'bg-blue-50 ring-1 ring-blue-300',
         className,
       )}
+      style={isOver ? { background: 'var(--blue-accent-bg)', outline: '1px solid var(--blue-accent-border)' } : undefined}
     >
       {children}
     </div>
@@ -438,10 +443,10 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
   }
 
   if (error) return (
-    <div className="flex flex-1 items-center justify-center text-sm text-red-500">{error}</div>
+    <div className="flex flex-1 items-center justify-center text-sm" style={{ color: 'var(--red-accent)' }}>{error}</div>
   )
   if (!isHydrated) return (
-    <div className="flex flex-1 items-center justify-center text-sm text-gray-400">Loading roster…</div>
+    <div className="flex flex-1 items-center justify-center text-sm" style={{ color: 'var(--text-mute)' }}>Loading roster…</div>
   )
 
   const allDates = datesInRange(startDate, endDate)
@@ -498,22 +503,28 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
     <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <div className="flex flex-col flex-1 min-h-0">
         {/* Toolbar */}
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-200 shrink-0">
+        <div className="flex items-center gap-2 px-4 py-2 shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
           <button
-            className={cn('text-xs px-2 py-1 rounded border border-gray-200 hover:bg-gray-50', weekOffset === 0 && 'opacity-30 cursor-not-allowed')}
+            className={cn('text-xs px-2 py-1 rounded transition-colors', weekOffset === 0 && 'opacity-30 cursor-not-allowed')}
+            style={{ border: '1px solid var(--border)', color: 'var(--text-dim)' }}
+            onMouseEnter={e => { if (weekOffset !== 0) e.currentTarget.style.background = 'var(--surface-hover)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
             onClick={() => setWeekOffset(w => Math.max(0, w - 1))}
             disabled={weekOffset === 0}
           >
             ← Prev week
           </button>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs" style={{ color: 'var(--text-mute)' }}>
             Week {weekOffset + 1} of {totalWeeks}
             {visibleDates.length > 0 && (
               <> &nbsp;({shortDate(visibleDates[0])} – {shortDate(visibleDates[visibleDates.length - 1])})</>
             )}
           </span>
           <button
-            className={cn('text-xs px-2 py-1 rounded border border-gray-200 hover:bg-gray-50', weekOffset >= totalWeeks - 1 && 'opacity-30 cursor-not-allowed')}
+            className={cn('text-xs px-2 py-1 rounded transition-colors', weekOffset >= totalWeeks - 1 && 'opacity-30 cursor-not-allowed')}
+            style={{ border: '1px solid var(--border)', color: 'var(--text-dim)' }}
+            onMouseEnter={e => { if (weekOffset < totalWeeks - 1) e.currentTarget.style.background = 'var(--surface-hover)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
             onClick={() => setWeekOffset(w => Math.min(totalWeeks - 1, w + 1))}
             disabled={weekOffset >= totalWeeks - 1}
           >
@@ -522,8 +533,8 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
 
           <div className="flex-1" />
 
-          {hasPendingWrites && <span className="text-xs text-gray-400">Saving…</span>}
-          {hasWriteErrors && <span className="text-xs text-red-500">Save failed — reload to retry</span>}
+          {hasPendingWrites && <span className="text-xs" style={{ color: 'var(--text-mute)' }}>Saving…</span>}
+          {hasWriteErrors && <span className="text-xs" style={{ color: 'var(--red-accent)' }}>Save failed — reload to retry</span>}
 
           <ViolationsPopover
             onJumpToWeek={setWeekOffset}
@@ -539,21 +550,32 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
               {visibleDates.map(d => <col key={d} style={{ width: 110 }} />)}
             </colgroup>
 
-            <thead className="sticky top-0 z-30 bg-white">
+            <thead className="sticky top-0 z-30" style={{ background: 'var(--background)' }}>
               <tr>
-                <th className="sticky left-0 z-40 bg-gray-50 border-b border-r border-gray-200 px-3 py-2 text-left text-gray-400 font-normal">
+                <th
+                  className="sticky left-0 z-40 px-3 py-2 text-left font-normal"
+                  style={{
+                    background: 'var(--surface-1)',
+                    borderBottom: '1px solid var(--border)',
+                    borderRight: '1px solid var(--border)',
+                    color: 'var(--text-mute)',
+                  }}
+                >
                   Area
                 </th>
                 {visibleDates.map(date => (
                   <th
                     key={date}
-                    className={cn(
-                      'border-b border-r border-gray-200 px-1 py-1.5 text-center font-medium',
-                      isWeekend(date) ? 'bg-gray-50 text-gray-500' : 'bg-white text-gray-700'
-                    )}
+                    className="px-1 py-1.5 text-center font-medium"
+                    style={{
+                      background: isWeekend(date) ? 'var(--surface-1)' : 'var(--background)',
+                      borderBottom: '1px solid var(--border)',
+                      borderRight: '1px solid var(--border)',
+                      color: isWeekend(date) ? 'var(--text-mute)' : 'var(--text-dim)',
+                    }}
                   >
                     <div>{dowAbbr(date)}</div>
-                    <div className="font-normal text-gray-400">{shortDate(date)}</div>
+                    <div className="font-normal" style={{ color: 'var(--text-mute)' }}>{shortDate(date)}</div>
                   </th>
                 ))}
               </tr>
@@ -565,8 +587,8 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
                   <td
                     colSpan={visibleDates.length + 1}
                     className={cn(
-                      'border-b border-t border-gray-200 px-3 py-1 text-[11px] font-bold uppercase tracking-wider',
-                      SECTION_TINT[shiftType],
+                      'px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-wider',
+                      SECTION_CLASS[shiftType],
                     )}
                     style={{ position: 'sticky', top: SECTION_STICKY_TOP, zIndex: 20 }}
                   >
@@ -574,8 +596,16 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
                   </td>
                 </tr>,
                 ...storeAreas.map(area => (
-                  <tr key={`${shiftType}-${area.id}`} className="hover:bg-gray-50/40">
-                    <td className="sticky left-0 z-10 border-b border-r border-gray-100 bg-white px-3 py-1.5 truncate text-gray-700">
+                  <tr key={`${shiftType}-${area.id}`}>
+                    <td
+                      className="sticky left-0 z-10 px-3 py-1.5 truncate"
+                      style={{
+                        background: 'var(--card)',
+                        borderBottom: '1px solid var(--border)',
+                        borderRight: '1px solid var(--border)',
+                        color: 'var(--text-dim)',
+                      }}
+                    >
                       {area.name}
                     </td>
 
@@ -589,14 +619,24 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
                       return (
                         <td
                           key={date}
-                          className={cn(
-                            'border-b border-r border-gray-100 p-1 align-top group h-px',
-                            isWeekend(date) && 'bg-gray-50/60',
-                            isFullyFilled && 'bg-green-50',
-                          )}
+                          className="p-1 align-top group h-px"
+                          style={{
+                            borderBottom: '1px solid var(--border)',
+                            borderRight: '1px solid var(--border)',
+                            background: isFullyFilled
+                              ? 'var(--green-accent-bg)'
+                              : isWeekend(date)
+                                ? 'var(--surface-1)'
+                                : 'transparent',
+                          }}
                         >
                           {!shift ? (
-                            <div className="h-full min-h-[28px] rounded bg-[repeating-linear-gradient(45deg,transparent,transparent_4px,rgb(243_244_246)_4px,rgb(243_244_246)_5px)]" />
+                            <div
+                              className="h-full min-h-[28px] rounded"
+                              style={{
+                                background: 'repeating-linear-gradient(45deg,transparent,transparent 4px,rgba(255,255,255,0.03) 4px,rgba(255,255,255,0.03) 5px)',
+                              }}
+                            />
                           ) : (
                             <CellDropZone shiftInstanceId={shift.id}>
                               {assignedIds.map(staffId => {
@@ -644,7 +684,8 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
                                 trigger={
                                   <button
                                     type="button"
-                                    className="flex flex-1 min-h-[20px] items-center justify-center gap-1 rounded border border-dashed border-gray-300 px-1 py-0.5 text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="flex flex-1 min-h-[20px] items-center justify-center gap-1 rounded border border-dashed px-1 py-0.5 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                                    style={{ borderColor: 'var(--border-strong)', color: 'var(--text-mute)' }}
                                     title={`Assign staff to ${area.name} ${SHIFT_LABEL[shiftType]} on ${shortDate(date)}`}
                                   >
                                     <Plus className="h-3 w-3" />
@@ -665,20 +706,23 @@ export default function RosterGrid({ blockId, startDate, endDate }: Props) {
         </div>
 
         {/* Coverage bar */}
-        <div className="shrink-0 border-t border-gray-200 px-4 py-2 flex items-center gap-6 overflow-x-auto">
-          <span className="text-xs text-gray-400 shrink-0">Coverage</span>
+        <div
+          className="shrink-0 px-4 py-2 flex items-center gap-6 overflow-x-auto"
+          style={{ borderTop: '1px solid var(--border)' }}
+        >
+          <span className="text-xs shrink-0" style={{ color: 'var(--text-mute)' }}>Coverage</span>
           {storeAreas.map(area => {
             const totFilled = visibleDates.reduce((sum, d) => sum + (coverage[`${area.id}:${d}`]?.filled ?? 0), 0)
             const totRequired = visibleDates.reduce((sum, d) => sum + (coverage[`${area.id}:${d}`]?.required ?? 0), 0)
             const pct = totRequired > 0 ? Math.round((totFilled / totRequired) * 100) : 100
-            const barColour = pct < 80 ? 'bg-red-400' : pct < 100 ? 'bg-amber-400' : 'bg-green-400'
+            const barColor = pct < 80 ? 'var(--red-accent)' : pct < 100 ? 'var(--amber-accent)' : 'var(--green-accent)'
             return (
               <div key={area.id} className="flex items-center gap-1.5 shrink-0">
-                <span className="text-xs text-gray-600">{area.name}</span>
-                <div className="w-20 h-1.5 rounded-full bg-gray-200">
-                  <div className={cn('h-1.5 rounded-full', barColour)} style={{ width: `${Math.min(100, pct)}%` }} />
+                <span className="text-xs" style={{ color: 'var(--text-dim)' }}>{area.name}</span>
+                <div className="w-20 h-1.5 rounded-full" style={{ background: 'var(--muted)' }}>
+                  <div className="h-1.5 rounded-full" style={{ width: `${Math.min(100, pct)}%`, background: barColor }} />
                 </div>
-                <span className="text-xs text-gray-400">{totFilled}/{totRequired}</span>
+                <span className="text-xs" style={{ color: 'var(--text-mute)' }}>{totFilled}/{totRequired}</span>
               </div>
             )
           })}

@@ -22,13 +22,13 @@ const LEAVE_LABELS: Record<LeaveType, string> = {
   other: 'Other',
 }
 
-function leaveTypeBadgeClass(type: LeaveType): string {
+function leaveTypeBadgeStyle(type: LeaveType): React.CSSProperties {
   switch (type) {
-    case 'annual': return 'bg-blue-50 text-blue-700 border-blue-200'
-    case 'sick': return 'bg-red-50 text-red-700 border-red-200'
+    case 'annual': return { background: 'var(--blue-accent-bg)', color: 'var(--blue-accent)', borderColor: 'var(--blue-accent-border)' }
+    case 'sick': return { background: 'var(--red-accent-bg)', color: 'var(--red-accent)', borderColor: 'var(--red-accent-border)' }
     case 'ado':
-    case 'rdo': return 'bg-green-50 text-green-700 border-green-200'
-    default: return ''
+    case 'rdo': return { background: 'var(--green-accent-bg)', color: 'var(--green-accent)', borderColor: 'var(--green-accent-border)' }
+    default: return {}
   }
 }
 
@@ -74,9 +74,8 @@ export default function LeaveTable({ initialRequests }: Props) {
   }
 
   function renderLeaveType(type: LeaveType) {
-    const cls = leaveTypeBadgeClass(type)
     return (
-      <Badge variant="outline" className={`text-xs ${cls}`}>
+      <Badge variant="outline" className="text-xs" style={leaveTypeBadgeStyle(type)}>
         {LEAVE_LABELS[type]}
       </Badge>
     )
@@ -90,7 +89,7 @@ export default function LeaveTable({ initialRequests }: Props) {
     const isBusy = pendingId === req.id
 
     return (
-      <TableRow key={req.id} className="hover:bg-gray-50/50">
+      <TableRow key={req.id}>
         <TableCell className="font-medium">{req.staff?.full_name ?? req.staff_id}</TableCell>
         <TableCell>{renderLeaveType(req.leave_type)}</TableCell>
         <TableCell className="text-sm">{formatDate(req.start_date)}</TableCell>
@@ -110,7 +109,10 @@ export default function LeaveTable({ initialRequests }: Props) {
               </PopoverTrigger>
               <PopoverContent className="w-40 p-1">
                 <button
-                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-green-700 hover:bg-green-50 disabled:opacity-50"
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors disabled:opacity-50"
+                  style={{ color: 'var(--green-accent)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--green-accent-bg)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                   disabled={isBusy}
                   onClick={() => handleAction(req.id, 'approve')}
                 >
@@ -118,7 +120,10 @@ export default function LeaveTable({ initialRequests }: Props) {
                   Approve
                 </button>
                 <button
-                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors disabled:opacity-50"
+                  style={{ color: 'var(--red-accent)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--red-accent-bg)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                   disabled={isBusy}
                   onClick={() => handleAction(req.id, 'reject')}
                 >
@@ -142,7 +147,7 @@ export default function LeaveTable({ initialRequests }: Props) {
           <TabsTrigger value="pending">
             Pending
             {pending.length > 0 && (
-              <span className="ml-1.5 rounded-full bg-orange-100 px-1.5 py-0.5 text-xs font-medium text-orange-700">
+              <span className="ml-1.5 rounded-full px-1.5 py-0.5 text-xs font-medium" style={{ background: 'var(--amber-accent-bg)', color: 'var(--amber-accent)' }}>
                 {pending.length}
               </span>
             )}
@@ -152,10 +157,10 @@ export default function LeaveTable({ initialRequests }: Props) {
         </TabsList>
 
         <TabsContent value="pending" className="mt-4">
-          <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+          <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50">
+                <TableRow style={{ background: 'var(--surface-1)' }}>
                   <TableHead>Staff</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>From</TableHead>
@@ -168,7 +173,7 @@ export default function LeaveTable({ initialRequests }: Props) {
               <TableBody>
                 {pending.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-10 text-sm text-gray-400">
+                    <TableCell colSpan={7} className="text-center py-10 text-sm" style={{ color: 'var(--text-mute)' }}>
                       No pending leave requests.
                     </TableCell>
                   </TableRow>
@@ -181,10 +186,10 @@ export default function LeaveTable({ initialRequests }: Props) {
         </TabsContent>
 
         <TabsContent value="approved" className="mt-4">
-          <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+          <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50">
+                <TableRow style={{ background: 'var(--surface-1)' }}>
                   <TableHead>Staff</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>From</TableHead>
@@ -196,7 +201,7 @@ export default function LeaveTable({ initialRequests }: Props) {
               <TableBody>
                 {approved.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-10 text-sm text-gray-400">
+                    <TableCell colSpan={6} className="text-center py-10 text-sm" style={{ color: 'var(--text-mute)' }}>
                       No approved leave.
                     </TableCell>
                   </TableRow>
@@ -209,10 +214,10 @@ export default function LeaveTable({ initialRequests }: Props) {
         </TabsContent>
 
         <TabsContent value="rejected" className="mt-4">
-          <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+          <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50">
+                <TableRow style={{ background: 'var(--surface-1)' }}>
                   <TableHead>Staff</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>From</TableHead>
@@ -224,7 +229,7 @@ export default function LeaveTable({ initialRequests }: Props) {
               <TableBody>
                 {rejected.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-10 text-sm text-gray-400">
+                    <TableCell colSpan={6} className="text-center py-10 text-sm" style={{ color: 'var(--text-mute)' }}>
                       No rejected leave.
                     </TableCell>
                   </TableRow>

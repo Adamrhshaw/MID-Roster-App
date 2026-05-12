@@ -97,7 +97,7 @@ export default function GenerateDraftButton({ blockId }: Props) {
           <DialogHeader>
             <DialogTitle>{error ? 'Generation failed' : 'Draft generated'}</DialogTitle>
           </DialogHeader>
-          {error && <p className="pt-2 text-sm text-red-600">{error}</p>}
+          {error && <p className="pt-2 text-sm" style={{ color: 'var(--red-accent)' }}>{error}</p>}
           {report && (
             <div className="flex flex-col gap-3 pt-2 text-sm">
               <ReportRow label="Shifts filled" value={report.filledCount} />
@@ -111,11 +111,11 @@ export default function GenerateDraftButton({ blockId }: Props) {
                 emphasis={report.unresolvableGaps.length > 0}
               />
               {report.unresolvableGaps.length > 0 && (
-                <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-3">
-                  <p className="text-xs font-medium text-amber-900">
+                <div className="mt-2 rounded-md p-3" style={{ border: '1px solid var(--amber-accent-border)', background: 'var(--amber-accent-bg)' }}>
+                  <p className="text-xs font-medium" style={{ color: 'var(--amber-accent)' }}>
                     These shifts could not be filled — assign manually:
                   </p>
-                  <ul className="mt-2 flex max-h-48 flex-col gap-1 overflow-y-auto text-xs text-amber-900">
+                  <ul className="mt-2 flex max-h-48 flex-col gap-1 overflow-y-auto text-xs" style={{ color: 'var(--amber-accent)' }}>
                     {report.unresolvableGaps.map(g => (
                       <li key={g.shiftInstanceId}>
                         {g.date} · {g.areaName} · {g.shiftType.toUpperCase()} ({g.filled}/{g.required})
@@ -138,8 +138,8 @@ export default function GenerateDraftButton({ blockId }: Props) {
 function ReportRow({ label, value, emphasis }: { label: string; value: number; emphasis?: boolean }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-gray-700">{label}</span>
-      <span className={emphasis ? 'font-semibold text-amber-700' : 'font-medium text-gray-900'}>
+      <span style={{ color: 'var(--text-dim)' }}>{label}</span>
+      <span className="font-medium" style={{ color: emphasis ? 'var(--amber-accent)' : 'var(--foreground)' }}>
         {value}
       </span>
     </div>

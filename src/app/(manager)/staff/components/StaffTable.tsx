@@ -72,7 +72,7 @@ export default function StaffTable({ initialStaff, areas }: Props) {
 
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-mute)' }} />
           <Input
             placeholder="Search staff…"
             className="pl-9"
@@ -83,10 +83,10 @@ export default function StaffTable({ initialStaff, areas }: Props) {
         <span className="text-sm text-muted-foreground">{filtered.length} of {staff.length}</span>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+      <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50">
+            <TableRow style={{ background: 'var(--surface-1)' }}>
               <TableHead>Name</TableHead>
               <TableHead>Employee ID</TableHead>
               <TableHead>FTE</TableHead>
@@ -98,13 +98,13 @@ export default function StaffTable({ initialStaff, areas }: Props) {
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-10 text-sm text-gray-400">
+                <TableCell colSpan={6} className="text-center py-10 text-sm" style={{ color: 'var(--text-mute)' }}>
                   {query ? 'No staff match your search.' : 'No staff yet — click Add Staff to get started.'}
                 </TableCell>
               </TableRow>
             ) : (
               filtered.map(member => (
-                <TableRow key={member.id} className="hover:bg-gray-50/50">
+                <TableRow key={member.id}>
                   <TableCell className="font-medium">{member.full_name}</TableCell>
                   <TableCell className="text-muted-foreground font-mono text-xs">{member.employee_id}</TableCell>
                   <TableCell>{(member.fte_target * 100).toFixed(0)}%</TableCell>
@@ -144,7 +144,10 @@ export default function StaffTable({ initialStaff, areas }: Props) {
                         </button>
                         {member.is_active ? (
                           <button
-                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-red-600 hover:bg-red-50"
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors"
+                            style={{ color: 'var(--red-accent)' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'var(--red-accent-bg)' }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                             onClick={() => deactivate(member.id)}
                           >
                             <UserMinus className="h-3.5 w-3.5" />
@@ -152,7 +155,10 @@ export default function StaffTable({ initialStaff, areas }: Props) {
                           </button>
                         ) : (
                           <button
-                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-green-700 hover:bg-green-50"
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors"
+                            style={{ color: 'var(--green-accent)' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'var(--green-accent-bg)' }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                             onClick={() => reactivate(member.id)}
                           >
                             <UserCheck className="h-3.5 w-3.5" />

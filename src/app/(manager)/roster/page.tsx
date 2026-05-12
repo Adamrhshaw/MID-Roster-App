@@ -22,8 +22,8 @@ export default async function RosterIndexPage() {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 p-8">
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-lg font-semibold text-gray-800">No roster blocks yet</h1>
-        <p className="max-w-xs text-sm text-gray-500">
+        <h1 className="text-lg font-semibold">No roster blocks yet</h1>
+        <p className="max-w-xs text-sm" style={{ color: 'var(--text-dim)' }}>
           Create your first block to stamp shift instances from your configured templates.
         </p>
       </div>

@@ -34,19 +34,15 @@ export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, a
 
   const [open, setOpen] = useState(false)
 
-  // Filter to staff eligible for this area (via staff_areas).
   const eligibleStaffIds = new Set(
     staffAreas.filter(sa => sa.area_id === areaId).map(sa => sa.staff_id),
   )
   const staff = allStaff.filter(s => eligibleStaffIds.has(s.id))
 
-  // Staff already assigned to this shift
   const assignedIds = new Set(
     assignments.filter(a => a.shift_instance_id === shiftInstanceId).map(a => a.staff_id)
   )
 
-  // Per-staff violation preview: would assigning this person cause any violations?
-  // We check existing violations for them on this shift instance.
   const violationsByStaff = new Map<string, string[]>()
   for (const v of violations) {
     if (v.shiftInstanceId === shiftInstanceId && v.staffId) {
@@ -65,7 +61,8 @@ export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, a
 
   const defaultTrigger = (
     <button
-      className="inline-flex items-center gap-0.5 rounded border border-dashed border-gray-300 px-1 py-px text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-colors leading-tight"
+      className="inline-flex items-center gap-0.5 rounded border border-dashed px-1 py-px transition-colors leading-tight"
+      style={{ borderColor: 'var(--border-strong)', color: 'var(--text-mute)' }}
       title={`Assign staff to ${areaName} ${SHIFT_LABEL[shiftType]} on ${dateLabel}`}
     >
       <UserPlus className="h-2.5 w-2.5" />
@@ -77,15 +74,18 @@ export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, a
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger nativeButton={nativeButton} render={trigger ?? defaultTrigger} />
       <PopoverContent className="w-56 p-0" side="bottom" align="start">
-        <div className="px-3 py-2 border-b border-gray-100">
-          <div className="text-xs font-semibold text-gray-700">
+        <div
+          className="px-3 py-2"
+          style={{ borderBottom: '1px solid var(--border)' }}
+        >
+          <div className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
             Assign — {areaName} {SHIFT_LABEL[shiftType]}
           </div>
-          <div className="text-[10px] text-gray-400">{dateLabel}</div>
+          <div className="text-[10px]" style={{ color: 'var(--text-mute)' }}>{dateLabel}</div>
         </div>
 
         {staff.length === 0 ? (
-          <div className="px-3 py-3 text-xs text-gray-400">No staff eligible for {areaName}</div>
+          <div className="px-3 py-3 text-xs" style={{ color: 'var(--text-mute)' }}>No staff eligible for {areaName}</div>
         ) : (
           <ul className="max-h-60 overflow-y-auto py-1">
             {staff.map(member => {
@@ -99,21 +99,22 @@ export default function AssignPopover({ shiftInstanceId, shiftType, shiftDate, a
                     onClick={() => handleAssign(member.id)}
                     className={cn(
                       'w-full text-left px-3 py-1.5 text-xs flex items-center justify-between gap-2 transition-colors',
-                      isAssigned
-                        ? 'text-gray-400 cursor-default'
-                        : 'hover:bg-gray-50 text-gray-700 cursor-pointer',
+                      isAssigned ? 'cursor-default' : 'cursor-pointer',
                     )}
+                    style={{ color: isAssigned ? 'var(--text-mute)' : 'var(--foreground)' }}
+                    onMouseEnter={e => { if (!isAssigned) e.currentTarget.style.background = 'var(--surface-hover)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                   >
                     <span className="flex items-center gap-1.5 min-w-0">
                       {memberViolations.length > 0 && !isAssigned && (
                         <span title={memberViolations.join('\n')}>
-                          <AlertTriangle className="h-3 w-3 text-amber-400 shrink-0" />
+                          <AlertTriangle className="h-3 w-3 shrink-0" style={{ color: 'var(--amber-accent)' }} />
                         </span>
                       )}
                       <span className="truncate">{member.full_name}</span>
-                      <span className="text-gray-400 shrink-0">{(member.fte_target * 100).toFixed(0)}%</span>
+                      <span className="shrink-0" style={{ color: 'var(--text-mute)' }}>{(member.fte_target * 100).toFixed(0)}%</span>
                     </span>
-                    {isAssigned && <Check className="h-3 w-3 text-green-500 shrink-0" />}
+                    {isAssigned && <Check className="h-3 w-3 shrink-0" style={{ color: 'var(--green-accent)' }} />}
                   </button>
                 </li>
               )

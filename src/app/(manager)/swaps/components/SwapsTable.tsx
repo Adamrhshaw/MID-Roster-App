@@ -68,7 +68,7 @@ export default function SwapsTable({ initialSwaps }: Props) {
     const hasTarget = !!swap.target_assignment_id
 
     return (
-      <TableRow key={swap.id} className="hover:bg-gray-50/50">
+      <TableRow key={swap.id} className="">
         <TableCell className="font-medium">{swap.requester_staff?.full_name ?? swap.requester_staff_id}</TableCell>
         <TableCell className="text-sm font-mono text-xs">{shiftCell(swap.requester_assignment)}</TableCell>
         <TableCell className="text-muted-foreground">{swap.target_staff?.full_name ?? '—'}</TableCell>
@@ -87,7 +87,10 @@ export default function SwapsTable({ initialSwaps }: Props) {
             </PopoverTrigger>
             <PopoverContent className="w-48 p-1">
               <button
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-green-700 hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ color: 'var(--green-accent)' }}
+                onMouseEnter={e => { if (!isBusy && hasTarget) e.currentTarget.style.background = 'var(--green-accent-bg)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                 disabled={isBusy || !hasTarget}
                 title={!hasTarget ? 'No swap partner assigned' : undefined}
                 onClick={() => handleAction(swap.id, 'approve')}
@@ -96,7 +99,10 @@ export default function SwapsTable({ initialSwaps }: Props) {
                 Approve
               </button>
               <button
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors disabled:opacity-50"
+                style={{ color: 'var(--red-accent)' }}
+                onMouseEnter={e => { if (!isBusy) e.currentTarget.style.background = 'var(--red-accent-bg)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                 disabled={isBusy}
                 onClick={() => handleAction(swap.id, 'reject')}
               >
@@ -112,7 +118,7 @@ export default function SwapsTable({ initialSwaps }: Props) {
 
   function renderReadOnlyRow(swap: ShiftSwap) {
     return (
-      <TableRow key={swap.id} className="hover:bg-gray-50/50">
+      <TableRow key={swap.id} className="">
         <TableCell className="font-medium">{swap.requester_staff?.full_name ?? swap.requester_staff_id}</TableCell>
         <TableCell className="text-sm font-mono text-xs">{shiftCell(swap.requester_assignment)}</TableCell>
         <TableCell className="text-muted-foreground">{swap.target_staff?.full_name ?? '—'}</TableCell>
@@ -131,7 +137,7 @@ export default function SwapsTable({ initialSwaps }: Props) {
           <TabsTrigger value="pending">
             Pending
             {pending.length > 0 && (
-              <span className="ml-1.5 rounded-full bg-orange-100 px-1.5 py-0.5 text-xs font-medium text-orange-700">
+              <span className="ml-1.5 rounded-full px-1.5 py-0.5 text-xs font-medium" style={{ background: 'var(--amber-accent-bg)', color: 'var(--amber-accent)' }}>
                 {pending.length}
               </span>
             )}
@@ -141,10 +147,10 @@ export default function SwapsTable({ initialSwaps }: Props) {
         </TabsList>
 
         <TabsContent value="pending" className="mt-4">
-          <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+          <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50">
+                <TableRow style={{ background: 'var(--surface-1)' }}>
                   <TableHead>Requester</TableHead>
                   <TableHead>Their Shift</TableHead>
                   <TableHead>Partner</TableHead>
@@ -157,7 +163,7 @@ export default function SwapsTable({ initialSwaps }: Props) {
               <TableBody>
                 {pending.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-10 text-sm text-gray-400">
+                    <TableCell colSpan={7} className="text-center py-10 text-sm" style={{ color: 'var(--text-mute)' }}>
                       No pending swap requests.
                     </TableCell>
                   </TableRow>
@@ -170,10 +176,10 @@ export default function SwapsTable({ initialSwaps }: Props) {
         </TabsContent>
 
         <TabsContent value="approved" className="mt-4">
-          <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+          <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50">
+                <TableRow style={{ background: 'var(--surface-1)' }}>
                   <TableHead>Requester</TableHead>
                   <TableHead>Their Shift</TableHead>
                   <TableHead>Partner</TableHead>
@@ -184,7 +190,7 @@ export default function SwapsTable({ initialSwaps }: Props) {
               <TableBody>
                 {approved.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-10 text-sm text-gray-400">
+                    <TableCell colSpan={5} className="text-center py-10 text-sm" style={{ color: 'var(--text-mute)' }}>
                       No approved swaps.
                     </TableCell>
                   </TableRow>
@@ -197,10 +203,10 @@ export default function SwapsTable({ initialSwaps }: Props) {
         </TabsContent>
 
         <TabsContent value="rejected" className="mt-4">
-          <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+          <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50">
+                <TableRow style={{ background: 'var(--surface-1)' }}>
                   <TableHead>Requester</TableHead>
                   <TableHead>Their Shift</TableHead>
                   <TableHead>Partner</TableHead>
@@ -211,7 +217,7 @@ export default function SwapsTable({ initialSwaps }: Props) {
               <TableBody>
                 {rejected.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-10 text-sm text-gray-400">
+                    <TableCell colSpan={5} className="text-center py-10 text-sm" style={{ color: 'var(--text-mute)' }}>
                       No rejected swaps.
                     </TableCell>
                   </TableRow>

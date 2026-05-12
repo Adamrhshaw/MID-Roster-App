@@ -160,7 +160,7 @@
 | Item | Status |
 |------|--------|
 | shadcn/ui v4 component library | ✅ |
-| Visual design pass | ⬜ |
+| Visual design pass | ✅ |
 
 ---
 
@@ -180,4 +180,4 @@
 12. Portal — leave + swap submission
 13. Email notifications (Resend)
 14. Export (CSV / XLSX)
-15. Visual design pass (`/frontend-design` skill)
+15. ~~Visual design pass — Resend-inspired dark theme, Inter font, prototype TopNav, roster grid dark colors~~ ✅

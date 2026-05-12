@@ -54,14 +54,14 @@ export default async function PublicRosterViewPage({ params, searchParams }: Pro
     : { data: [] as Array<{ shift_instance_id: string; staff_id: string }> }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
-      <header className="border-b border-gray-200 bg-white px-6 py-3 shrink-0">
+    <div className="h-screen flex flex-col" style={{ background: 'var(--background)' }}>
+      <header className="px-6 py-3 shrink-0" style={{ borderBottom: '1px solid var(--border)', background: 'var(--card)' }}>
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-sm font-semibold text-gray-900">
+            <h1 className="text-sm font-semibold">
               {block.name ?? `${block.start_date} – ${block.end_date}`}
             </h1>
-            <p className="text-xs text-gray-500">Radiology Roster</p>
+            <p className="text-xs" style={{ color: 'var(--text-dim)' }}>Radiology Roster</p>
           </div>
           <div className="flex items-center gap-3">
             <AreaFilter
@@ -73,7 +73,7 @@ export default async function PublicRosterViewPage({ params, searchParams }: Pro
             <form>
               {areaId && <input type="hidden" name="area" value={areaId} />}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5" style={{ color: 'var(--text-mute)' }} />
                 <Input
                   name="highlight"
                   placeholder="Employee ID to highlight your shifts"

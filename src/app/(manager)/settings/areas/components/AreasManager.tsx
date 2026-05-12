@@ -98,10 +98,10 @@ export default function AreasManager({ initialAreas }: Props) {
         )}
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+      <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50">
+            <TableRow style={{ background: 'var(--surface-1)' }}>
               <TableHead>Name</TableHead>
               <TableHead className="w-48">Min staff per shift</TableHead>
               <TableHead className="w-24" />
@@ -110,7 +110,7 @@ export default function AreasManager({ initialAreas }: Props) {
           <TableBody>
             {areas.length === 0 && !adding ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-center py-10 text-sm text-gray-400">
+                <TableCell colSpan={3} className="text-center py-10 text-sm" style={{ color: 'var(--text-mute)' }}>
                   No areas yet — click Add Area to get started.
                 </TableCell>
               </TableRow>
@@ -148,7 +148,7 @@ export default function AreasManager({ initialAreas }: Props) {
                     <div className="flex items-center gap-1 justify-end">
                       {editingId === area.id ? (
                         <>
-                          <Button variant="ghost" size="icon-sm" className="h-7 w-7 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50" onClick={() => saveEdit(area.id)}>
+                          <Button variant="ghost" size="icon-sm" className="h-7 w-7" style={{ color: 'var(--green-accent)' }} onClick={() => saveEdit(area.id)}>
                             <Check className="h-4 w-4" />
                           </Button>
                           <Button variant="ghost" size="icon-sm" className="h-7 w-7" onClick={cancelEdit}>
@@ -160,7 +160,7 @@ export default function AreasManager({ initialAreas }: Props) {
                           <Button variant="ghost" size="icon-sm" className="h-7 w-7" onClick={() => startEdit(area)}>
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
-                          <Button variant="ghost" size="icon-sm" className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => deleteArea(area.id)}>
+                          <Button variant="ghost" size="icon-sm" className="h-7 w-7" style={{ color: 'var(--red-accent)' }} onClick={() => deleteArea(area.id)}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </>
@@ -172,7 +172,7 @@ export default function AreasManager({ initialAreas }: Props) {
             )}
 
             {adding && (
-              <TableRow className="bg-blue-50/50">
+              <TableRow style={{ background: 'var(--blue-accent-bg)' }}>
                 <TableCell>
                   <Input
                     placeholder="e.g. X-Ray"

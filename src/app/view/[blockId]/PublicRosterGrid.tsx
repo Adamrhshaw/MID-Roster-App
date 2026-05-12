@@ -13,10 +13,10 @@ const SHIFT_LABEL: Record<string, string> = {
   night: 'NT',
 }
 
-const SECTION_TINT: Record<string, string> = {
-  morning: 'bg-blue-50/70 text-blue-700',
-  afternoon: 'bg-amber-50/70 text-amber-700',
-  night: 'bg-indigo-50/70 text-indigo-700',
+const SECTION_CLASS: Record<string, string> = {
+  morning: 'shift-section-am',
+  afternoon: 'shift-section-pm',
+  night: 'shift-section-nt',
 }
 
 const DAY_ABBR = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -128,21 +128,32 @@ export default function PublicRosterGrid({
         {allDates.map(d => <col key={d} style={{ width: COL_WIDTH }} />)}
       </colgroup>
 
-      <thead className="sticky top-0 z-30 bg-white">
+      <thead className="sticky top-0 z-30" style={{ background: 'var(--background)' }}>
         <tr>
-          <th className="sticky left-0 z-40 bg-gray-50 border-b border-r border-gray-200 px-3 py-2 text-left text-gray-400 font-normal">
+          <th
+            className="sticky left-0 z-40 px-3 py-2 text-left font-normal"
+            style={{
+              background: 'var(--surface-1)',
+              borderBottom: '1px solid var(--border)',
+              borderRight: '1px solid var(--border)',
+              color: 'var(--text-mute)',
+            }}
+          >
             Area
           </th>
           {allDates.map(date => (
             <th
               key={date}
-              className={cn(
-                'border-b border-r border-gray-200 px-1 py-1.5 text-center font-medium',
-                isWeekend(date) ? 'bg-gray-50 text-gray-500' : 'bg-white text-gray-700',
-              )}
+              className="px-1 py-1.5 text-center font-medium"
+              style={{
+                background: isWeekend(date) ? 'var(--surface-1)' : 'var(--background)',
+                borderBottom: '1px solid var(--border)',
+                borderRight: '1px solid var(--border)',
+                color: isWeekend(date) ? 'var(--text-mute)' : 'var(--text-dim)',
+              }}
             >
               <div>{dowAbbr(date)}</div>
-              <div className="font-normal text-gray-400">{shortDate(date)}</div>
+              <div className="font-normal" style={{ color: 'var(--text-mute)' }}>{shortDate(date)}</div>
             </th>
           ))}
         </tr>
@@ -154,8 +165,8 @@ export default function PublicRosterGrid({
             <td
               colSpan={allDates.length + 1}
               className={cn(
-                'border-b border-t border-gray-200 px-3 py-1 text-[11px] font-bold uppercase tracking-wider',
-                SECTION_TINT[shiftType],
+                'px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-wider',
+                SECTION_CLASS[shiftType],
               )}
               style={{ position: 'sticky', top: SECTION_STICKY_TOP, zIndex: 20 }}
             >
@@ -163,8 +174,16 @@ export default function PublicRosterGrid({
             </td>
           </tr>,
           ...visibleAreas.map(area => (
-            <tr key={`${shiftType}-${area.id}`} className="hover:bg-gray-50/40">
-              <td className="sticky left-0 z-10 border-b border-r border-gray-100 bg-white px-3 py-1.5 truncate text-gray-700">
+            <tr key={`${shiftType}-${area.id}`}>
+              <td
+                className="sticky left-0 z-10 px-3 py-1.5 truncate"
+                style={{
+                  background: 'var(--card)',
+                  borderBottom: '1px solid var(--border)',
+                  borderRight: '1px solid var(--border)',
+                  color: 'var(--text-dim)',
+                }}
+              >
                 {area.name}
               </td>
               {allDates.map(date => {
@@ -173,13 +192,20 @@ export default function PublicRosterGrid({
                 return (
                   <td
                     key={date}
-                    className={cn(
-                      'border-b border-r border-gray-100 p-1 align-top h-px',
-                      isWeekend(date) && 'bg-gray-50/60',
-                    )}
+                    className="p-1 align-top h-px"
+                    style={{
+                      borderBottom: '1px solid var(--border)',
+                      borderRight: '1px solid var(--border)',
+                      background: isWeekend(date) ? 'var(--surface-1)' : 'transparent',
+                    }}
                   >
                     {!shift ? (
-                      <div className="h-full min-h-[28px] rounded bg-[repeating-linear-gradient(45deg,transparent,transparent_4px,rgb(243_244_246)_4px,rgb(243_244_246)_5px)]" />
+                      <div
+                        className="h-full min-h-[28px] rounded"
+                        style={{
+                          background: 'repeating-linear-gradient(45deg,transparent,transparent 4px,rgba(255,255,255,0.03) 4px,rgba(255,255,255,0.03) 5px)',
+                        }}
+                      />
                     ) : (
                       <div className="flex flex-col gap-0.5 min-h-[28px]">
                         {assignedIds.map(staffId => {
@@ -189,11 +215,13 @@ export default function PublicRosterGrid({
                           return (
                             <span
                               key={staffId}
-                              className={cn(
-                                'flex w-full rounded border px-1.5 py-0.5 text-xs font-medium leading-tight truncate',
-                                'bg-white text-gray-700 border-gray-200',
-                                isDimmed && 'opacity-30',
-                              )}
+                              className="flex w-full rounded px-1.5 py-0.5 text-xs font-medium leading-tight truncate"
+                              style={{
+                                background: 'var(--muted)',
+                                border: '1px solid var(--border)',
+                                color: 'var(--foreground)',
+                                opacity: isDimmed ? 0.3 : 1,
+                              }}
                             >
                               {member.full_name}
                             </span>

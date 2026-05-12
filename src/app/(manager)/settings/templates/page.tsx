@@ -25,13 +25,16 @@ export default async function TemplatesPage() {
       </div>
 
       {(!areas || areas.length === 0) ? (
-        <div className="flex items-center justify-center h-32 rounded-lg border-2 border-dashed border-gray-200 text-sm text-gray-400">
+        <div
+          className="flex items-center justify-center h-32 rounded-lg border-2 border-dashed text-sm"
+          style={{ borderColor: 'var(--border)', color: 'var(--text-mute)' }}
+        >
           No areas configured — add areas in{' '}
-          <a href="/settings/areas" className="ml-1 text-blue-500 hover:underline">Settings → Areas</a>{' '}
+          <a href="/settings/areas" className="ml-1 hover:underline" style={{ color: 'var(--blue-accent)' }}>Settings → Areas</a>{' '}
           first.
         </div>
       ) : (
-        <div className="rounded-lg border bg-white overflow-hidden">
+        <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
           <TemplateGrid
             initialTemplates={(templates ?? []) as ShiftTemplate[]}
             areas={(areas ?? []) as Area[]}

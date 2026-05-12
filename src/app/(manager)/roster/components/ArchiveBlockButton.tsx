@@ -63,7 +63,7 @@ export default function ArchiveBlockButton({ blockId, blockLabel }: Props) {
             <strong>{blockLabel}</strong> will be removed from the public roster view and the block switcher will show it as archived. Assignments are preserved.
           </DialogDescription>
         </DialogHeader>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm" style={{ color: 'var(--red-accent)' }}>{error}</p>}
         <DialogFooter>
           <DialogClose render={<Button variant="outline" disabled={busy} />}>
             Cancel

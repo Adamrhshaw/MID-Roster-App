@@ -45,7 +45,7 @@ export default function DeleteRosterBlockButton({ blockId, blockLabel }: Props) 
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button variant="outline" size="sm" className="gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200" />
+          <Button variant="outline" size="sm" className="gap-1.5" style={{ color: 'var(--red-accent)', borderColor: 'var(--red-accent-border)' }} />
         }
       >
         <Trash2 className="h-3.5 w-3.5" />
@@ -59,7 +59,7 @@ export default function DeleteRosterBlockButton({ blockId, blockLabel }: Props) 
             This cannot be undone.
           </DialogDescription>
         </DialogHeader>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm" style={{ color: 'var(--red-accent)' }}>{error}</p>}
         <DialogFooter>
           <DialogClose render={<Button variant="outline" disabled={loading} />}>
             Cancel

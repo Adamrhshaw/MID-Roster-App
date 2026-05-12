@@ -76,7 +76,7 @@ export default async function RosterBlockPage({ params }: Props) {
       </div>
 
       {/* Grid card */}
-      <div className="flex flex-col flex-1 min-h-0 rounded-lg border border-gray-200 bg-white overflow-hidden">
+      <div className="flex flex-col flex-1 min-h-0 rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)', background: 'var(--card)' }}>
         <RosterGrid
           blockId={blockId}
           startDate={block.start_date}

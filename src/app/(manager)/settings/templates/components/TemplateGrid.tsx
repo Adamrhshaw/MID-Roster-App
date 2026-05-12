@@ -13,10 +13,10 @@ interface Props {
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
 const SHIFT_TYPES: ShiftType[] = ['morning', 'afternoon', 'night']
 const SHIFT_LABELS: Record<string, string> = { morning: 'Morning', afternoon: 'Afternoon', night: 'Night' }
-const SHIFT_COLORS: Record<string, string> = {
-  morning:   'bg-amber-50 text-amber-700',
-  afternoon: 'bg-blue-50 text-blue-700',
-  night:     'bg-slate-100 text-slate-600',
+const SHIFT_STYLES: Record<string, React.CSSProperties> = {
+  morning:   { background: 'var(--amber-accent-bg)', color: 'var(--amber-accent)' },
+  afternoon: { background: 'var(--blue-accent-bg)', color: 'var(--blue-accent)' },
+  night:     { background: 'var(--violet-accent-bg)', color: 'var(--violet-accent)' },
 }
 
 type CellKey = `${string}:${ShiftType}:${number}` // area_id:shift_type:day_of_week
@@ -102,7 +102,7 @@ export default function TemplateGrid({ initialTemplates, areas }: Props) {
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-sm">
         <thead>
-          <tr className="bg-gray-50">
+          <tr style={{ background: 'var(--surface-1)' }}>
             <th className="w-32 text-left py-2 px-3 text-muted-foreground font-medium border-b">Area</th>
             <th className="w-28 text-left py-2 px-3 text-muted-foreground font-medium border-b">Shift</th>
             {DAYS.map(d => (
@@ -118,13 +118,13 @@ export default function TemplateGrid({ initialTemplates, areas }: Props) {
               return (
                 <tr
                   key={`${area.id}-${shiftType}`}
-                  className={isLastShift && areaIdx < areas.length - 1 ? 'border-b border-gray-200' : ''}
+                  style={isLastShift && areaIdx < areas.length - 1 ? { borderBottom: '1px solid var(--border)' } : {}}
                 >
                   <td className={`py-1.5 px-3 align-middle ${isFirstRow ? 'font-medium' : ''}`}>
                     {isFirstRow ? area.name : ''}
                   </td>
                   <td className="py-1.5 px-3 align-middle">
-                    <span className={`inline-block rounded px-1.5 py-0.5 text-xs font-medium ${SHIFT_COLORS[shiftType]}`}>
+                    <span className="inline-block rounded px-1.5 py-0.5 text-xs font-medium" style={SHIFT_STYLES[shiftType]}>
                       {SHIFT_LABELS[shiftType]}
                     </span>
                   </td>
@@ -138,7 +138,8 @@ export default function TemplateGrid({ initialTemplates, areas }: Props) {
                     return (
                       <td
                         key={day}
-                        className={`py-1 px-1 text-center align-middle ${isWeekend ? 'bg-gray-50/60' : ''}`}
+                        className="py-1 px-1 text-center align-middle"
+                        style={isWeekend ? { background: 'var(--surface-1)' } : {}}
                         onMouseEnter={() => setHoveredCell(key)}
                         onMouseLeave={() => setHoveredCell(null)}
                       >
@@ -147,19 +148,22 @@ export default function TemplateGrid({ initialTemplates, areas }: Props) {
                             variant="ghost"
                             size="icon-sm"
                             onClick={() => adjust(key, -1)}
-                            className={`h-6 w-5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-opacity ${isHovered && displayValue > 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                            className={`h-6 w-5 transition-opacity ${isHovered && displayValue > 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                            style={{ color: 'var(--text-mute)' }}
                             tabIndex={-1}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
                           <span
-                            className={`text-sm font-medium w-6 text-center select-none ${
-                              isDirty
-                                ? 'text-blue-600 font-semibold'
+                            className="text-sm font-medium w-6 text-center select-none"
+                            style={{
+                              color: isDirty
+                                ? 'var(--blue-accent)'
                                 : displayValue === 0
-                                  ? 'text-gray-300'
-                                  : 'text-gray-800'
-                            }`}
+                                  ? 'var(--text-mute)'
+                                  : 'var(--foreground)',
+                              fontWeight: isDirty ? 600 : 500,
+                            }}
                           >
                             {displayValue === 0 ? '—' : displayValue}
                           </span>
@@ -167,7 +171,8 @@ export default function TemplateGrid({ initialTemplates, areas }: Props) {
                             variant="ghost"
                             size="icon-sm"
                             onClick={() => adjust(key, +1)}
-                            className={`h-6 w-5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                            className={`h-6 w-5 transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                            style={{ color: 'var(--text-mute)' }}
                             tabIndex={-1}
                           >
                             <Plus className="h-3 w-3" />
